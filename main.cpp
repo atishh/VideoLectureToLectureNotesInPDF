@@ -1,0 +1,532 @@
+// ObjectTrackingCPP.cpp
+
+#include<opencv2/core/core.hpp>
+#include<opencv2/highgui/highgui.hpp>
+#include<opencv2/imgproc/imgproc.hpp>
+
+#include<iostream>
+#include<conio.h>           // it may be necessary to change or remove this line if not using Windows
+
+#include "Blob.h"
+#include "LNArrayOfBlock.h"
+
+#define SHOW_STEPS            // un-comment or comment this line to show steps or not
+
+const int nNoOfBlockRow = 10;
+const int nNoOfBlockCol = 10;
+
+// global variables ///////////////////////////////////////////////////////////////////////////////
+const cv::Scalar SCALAR_BLACK = cv::Scalar(0.0, 0.0, 0.0);
+const cv::Scalar SCALAR_WHITE = cv::Scalar(255.0, 255.0, 255.0);
+const cv::Scalar SCALAR_YELLOW = cv::Scalar(0.0, 255.0, 255.0);
+const cv::Scalar SCALAR_GREEN = cv::Scalar(0.0, 200.0, 0.0);
+const cv::Scalar SCALAR_RED = cv::Scalar(0.0, 0.0, 255.0);
+
+// function prototypes ////////////////////////////////////////////////////////////////////////////
+void matchCurrentFrameBlobsToExistingBlobs(std::vector<Blob> &existingBlobs, std::vector<Blob> &currentFrameBlobs);
+void addBlobToExistingBlobs(Blob &currentFrameBlob, std::vector<Blob> &existingBlobs, int &intIndex);
+void addNewBlob(Blob &currentFrameBlob, std::vector<Blob> &existingBlobs);
+double distanceBetweenPoints(cv::Point point1, cv::Point point2);
+void drawAndShowContours(cv::Size imageSize, std::vector<std::vector<cv::Point> > contours, std::string strImageName);
+void drawAndShowContours(cv::Size imageSize, std::vector<Blob> blobs, std::string strImageName);
+void drawBlobInfoOnImage(std::vector<Blob> &blobs, cv::Mat &imgFrame2Copy);
+
+bool IsIntensityDiffFromSurrounding(cv::Mat &imgLN, int r, int c)
+{
+	cv::Scalar intensity1 = imgLN.at<uchar>(r, c);
+	int intensity = intensity1.val[0];
+	int nNoOfIntensityDiff = 0;
+	for (int i = r - 1; i < r + 2; i++) {
+		for (int j = c - 1; j < c + 2; j++) {
+			cv::Scalar intensity2 = imgLN.at<uchar>(i, j);
+			if (intensity - intensity2.val[0] > 20) {
+				nNoOfIntensityDiff++;
+			}
+		}
+	}
+	if (nNoOfIntensityDiff >= 4)
+		return true;
+	return false;
+}
+
+inline cv::Mat translateImg(cv::Mat &img, cv::Mat &imgShift, int offsetx, int offsety)
+{
+    cv::Mat trans_mat = (cv::Mat_<double>(2,3) << 1, 0, offsetx, 0, 1, offsety);
+    warpAffine(img,imgShift,trans_mat,img.size());
+	return trans_mat;
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////
+int main(void) {
+
+	cv::VideoCapture capVideo;
+
+	cv::Mat imgFrame1;
+	cv::Mat imgFrame2;
+
+	std::vector<Blob> blobs;
+
+	capVideo.open("../mod03lec10.mp4");
+	//capVideo.open("../Lecture14.mp4");
+
+	int nStartFrame = 50500;
+	capVideo.set(CV_CAP_PROP_POS_FRAMES, nStartFrame);
+	int frameCount = 2;
+	int nCurrFrameNum = nStartFrame;
+
+	if (!capVideo.isOpened()) {                                                 // if unable to open video file
+		std::cout << "error reading video file" << std::endl << std::endl;      // show error message
+		_getch();                    // it may be necessary to change or remove this line if not using Windows
+		return(0);                                                              // and exit program
+	}
+
+	if (capVideo.get(CV_CAP_PROP_FRAME_COUNT) < 2) {
+		std::cout << "error: video file must have at least two frames";
+		_getch();
+		return(0);
+	}
+
+	int frameWidth = capVideo.get(CV_CAP_PROP_FRAME_WIDTH);
+	int frameHeight = capVideo.get(CV_CAP_PROP_FRAME_HEIGHT);
+	int totalFrames = capVideo.get(CV_CAP_PROP_FRAME_COUNT);
+
+	int nNoOfPixelsOfBlockRow = frameHeight / nNoOfBlockRow;
+	int nNoOfPixelsOfBlockCol = frameWidth / nNoOfBlockRow;
+
+	std::cout << "frame width = " << frameWidth << "frame height = " << frameHeight << "\n";
+	std::cout << "nNoOfPixelsOfBlockRow = " << nNoOfPixelsOfBlockRow << "\n";
+	std::cout << "nNoOfPixelsOfBlockCol = " << nNoOfPixelsOfBlockCol << "\n";
+
+	LNArrayOfBlock LNArrayOfBlockObj[nNoOfBlockRow][nNoOfBlockRow];
+	for (int r = 0; r < nNoOfBlockRow; r++) {
+		for (int c = 0; c < nNoOfBlockCol; c++) {
+			LNArrayOfBlockObj[r][c].nStartRow = r*nNoOfPixelsOfBlockRow;
+			LNArrayOfBlockObj[r][c].nStartCol = c*nNoOfPixelsOfBlockCol;
+			LNArrayOfBlockObj[r][c].nStartRow = (r+1)*nNoOfPixelsOfBlockRow;
+			LNArrayOfBlockObj[r][c].nStartCol = (c+1)*nNoOfPixelsOfBlockCol;
+			LNArrayOfBlockObj[r][c].nNoOfBlocks = 0;
+		}
+	}
+
+	capVideo.read(imgFrame1);
+	capVideo.read(imgFrame2);
+
+	char chCheckForEscKey = 0;
+
+	bool blnFirstFrame = true;
+
+
+
+
+	while (capVideo.isOpened() && chCheckForEscKey != 27) {
+
+		std::vector<Blob> currentFrameBlobs;
+
+		cv::Mat imgFrame1Copy = imgFrame1.clone();
+		cv::Mat imgFrame2Copy = imgFrame2.clone();
+		cv::Mat imgFrame1CopyLN = imgFrame1.clone();
+
+		cv::Mat imgDifference;
+		cv::Mat imgThresh;
+
+		cv::cvtColor(imgFrame1Copy, imgFrame1Copy, CV_BGR2GRAY);
+		cv::cvtColor(imgFrame2Copy, imgFrame2Copy, CV_BGR2GRAY);
+		cv::cvtColor(imgFrame1CopyLN, imgFrame1CopyLN, CV_BGR2GRAY);
+
+		cv::imshow("GrayImage", imgFrame1CopyLN);
+
+		cv::Mat imgFrame1CopyLNShift = cv::Mat::zeros(imgFrame1CopyLN.rows, imgFrame1CopyLN.cols, imgFrame1CopyLN.type());
+		translateImg(imgFrame1CopyLN, imgFrame1CopyLNShift, -1, 0);
+
+		cv::Mat imgFrame1CopyLNOrig = imgFrame1CopyLN.clone();
+		cv::GaussianBlur(imgFrame1CopyLNOrig, imgFrame1CopyLNOrig, cv::Size(5, 5), 0);
+		cv::GaussianBlur(imgFrame1CopyLNOrig, imgFrame1CopyLNOrig, cv::Size(5, 5), 0);
+		cv::imshow("GausiaanBlur", imgFrame1CopyLNOrig);
+
+		cv::absdiff(imgFrame1CopyLN, imgFrame1CopyLNShift, imgFrame1CopyLN);
+		cv::imshow("DiffImage", imgFrame1CopyLN);
+
+
+		cv::threshold(imgFrame1CopyLN, imgFrame1CopyLN, 30, 255.0, CV_THRESH_BINARY);
+		
+		cv::imshow("ThresholdImage", imgFrame1CopyLN);
+
+		cv::Mat structuringElement3x3 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+		cv::Mat structuringElement5x5 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
+		cv::Mat structuringElement7x7 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(7, 7));
+		cv::Mat structuringElement9x9 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(9, 9));
+
+		//cv::dilate(imgFrame1CopyLN, imgFrame1CopyLN, structuringElement3x3);
+		//cv::erode(imgFrame1CopyLN, imgFrame1CopyLN, structuringElement3x3);
+		//cv::erode(imgFrame1CopyLN, imgFrame1CopyLN, structuringElement3x3);
+
+		//cv::imshow("AfterDilateAndErode", imgFrame1CopyLN);
+
+		//cv::threshold(imgFrame1CopyLN, imgFrame1CopyLN, 128, 255.0, CV_THRESH_BINARY | CV_THRESH_OTSU);
+		//cv::threshold(imgFrame1CopyLN, imgFrame1CopyLN, 200, 255.0, CV_THRESH_BINARY | CV_THRESH_TRIANGLE);
+		//imgFrame1CopyLN = imgFrame1CopyLN > 190;
+
+		//Find count of pixels which are different from surroundings. 
+		int pixelCount[256] = { 0 };
+		int totalPixelCount[256] = { 0 };
+		for (int i = 40; i < frameHeight-40; i++) {
+			for (int j = 40; j < frameWidth-40; j++) {
+				cv::Scalar intensity2 = imgFrame1CopyLN.at<uchar>(i, j);
+				int intensity = intensity2.val[0];
+				if (IsIntensityDiffFromSurrounding(imgFrame1CopyLN, i, j)) {
+					pixelCount[intensity]++;
+				}
+				totalPixelCount[intensity]++;
+			}
+		}
+
+		//Find total pixel with maximum count
+		int totalPixelWithMaximumCount = 0;
+		int totalMaximumCount = totalPixelCount[0];
+		for (int i = 1; i < 256; i++) {
+			if (totalPixelCount[i] > totalMaximumCount) {
+				totalPixelWithMaximumCount = i;
+				totalMaximumCount = totalPixelCount[i];
+			}
+		}
+
+
+		for (int i = 0; i < 256; i++) {
+			std::cout << "pixelCount[" << i << "] = " << pixelCount[i] << "\n";
+			if(abs(i- totalPixelWithMaximumCount) < 40)
+				pixelCount[i] = 0;
+		}
+
+		for (int i = 0; i < 256; i++) {
+			std::cout << "After normal pixelCount[" << i << "] = " << pixelCount[i] << "\n";
+		}
+
+
+		//Find pixel with maximum count
+		int pixelWithMaximumCount = 0;
+		int maximumCount = pixelCount[0];
+		for (int i = 1; i < 256; i++) {
+			if (pixelCount[i] > maximumCount) {
+				pixelWithMaximumCount = i;
+				maximumCount = pixelCount[i];
+			}
+		}
+
+		//pixelWithMaximumCount = 50;
+
+		std::cout << "pixelWithMaximumCount = " << pixelWithMaximumCount << "\n";
+
+		//imgFrame1CopyLN = imgFrame1CopyLNOrig;
+
+		for (int i = 0; i < frameHeight; i++) {
+			for (int j = 0; j < frameWidth; j++) {
+				cv::Scalar intensity2 = imgFrame1CopyLN.at<uchar>(i, j);
+				int intensity = intensity2.val[0];
+				int diff = abs(intensity - pixelWithMaximumCount);
+				if (diff < 40) {
+					imgFrame1CopyLN.at<uchar>(i, j) = 255;
+				}
+				else {
+					imgFrame1CopyLN.at<uchar>(i, j) = 0;
+				}
+			}
+		}
+
+		//Populate Array of Block with Block of current frame. 
+		for (int r = 0; r < nNoOfBlockRow; r++) {
+			for (int c = 0; c < nNoOfBlockCol; c++) {
+
+				LNBlock LNBlockObj;
+				LNBlockObj.nFrameNum = nCurrFrameNum;
+				LNBlockObj.nNoOfPoints = 0;
+				for (int i = r*nNoOfPixelsOfBlockRow; i < (r + 1)*nNoOfPixelsOfBlockRow; i++) {
+					for (int j = c*nNoOfPixelsOfBlockCol; j < (c + 1)*nNoOfPixelsOfBlockCol; j++) {
+						cv::Scalar intensity2 = imgFrame1CopyLN.at<uchar>(i, j);
+						int intensity = intensity2.val[0];
+						if (intensity == 255) {
+							cv::Point pt;
+							pt.y = i;
+							pt.x = j;
+							(LNBlockObj.whitePixels).push_back(pt);
+							(LNBlockObj.nNoOfPoints)++;
+						}
+					}
+				}
+				std::cout << "LNBlockObj[" << r << "][" << c << "] = " << LNBlockObj.nNoOfPoints << "\n";
+				(LNArrayOfBlockObj[r][c].arrayOfBlock).push_back(LNBlockObj);
+				(LNArrayOfBlockObj[r][c].nNoOfBlocks)++;
+
+			}
+		}
+
+
+		//Create line to separate sentences of different line.
+		int continuousDiff = 0;
+		for (int i = 0; i < frameHeight; i++) {
+			float diff = 0;
+			cv::Scalar intensity1 = imgFrame1CopyLN.at<uchar>(i, 0);
+			for (int j = 1; j < frameWidth; j++) {
+				cv::Scalar intensity2 = imgFrame1CopyLN.at<uchar>(i, j);
+				diff += abs(intensity1.val[0] - intensity2.val[0]);
+				intensity1 = intensity2;
+			}
+			std::cout << "diff = " << diff << "\n";
+			if (diff < 5000) {
+				continuousDiff++;
+				if (continuousDiff < 2) {
+					for (int j = 0; j < frameWidth; j++) {
+						imgFrame1CopyLN.at<uchar>(i, j) = 128;
+					}
+				}
+				i = i + 10;
+			} 
+			else {
+				continuousDiff = 0;
+			}
+			
+		}
+
+		
+		cv::imshow("imgFrame1CopyLN", imgFrame1CopyLN);
+
+		cv::GaussianBlur(imgFrame1Copy, imgFrame1Copy, cv::Size(5, 5), 0);
+		cv::GaussianBlur(imgFrame2Copy, imgFrame2Copy, cv::Size(5, 5), 0);
+
+		cv::absdiff(imgFrame1Copy, imgFrame2Copy, imgDifference);
+
+		cv::threshold(imgDifference, imgThresh, 30, 255.0, CV_THRESH_BINARY);
+
+		cv::imshow("imgThresh", imgThresh);
+
+		//cv::Mat structuringElement3x3 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+		//cv::Mat structuringElement5x5 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
+		//cv::Mat structuringElement7x7 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(7, 7));
+		//cv::Mat structuringElement9x9 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(9, 9));
+
+		/*
+		cv::dilate(imgThresh, imgThresh, structuringElement7x7);
+		cv::erode(imgThresh, imgThresh, structuringElement3x3);
+		*/
+
+		cv::dilate(imgThresh, imgThresh, structuringElement5x5);
+		cv::dilate(imgThresh, imgThresh, structuringElement5x5);
+		cv::erode(imgThresh, imgThresh, structuringElement5x5);
+
+
+		cv::Mat imgThreshCopy = imgThresh.clone();
+
+		std::vector<std::vector<cv::Point> > contours;
+
+		cv::findContours(imgThreshCopy, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+		drawAndShowContours(imgThresh.size(), contours, "imgContours");
+
+		std::vector<std::vector<cv::Point> > convexHulls(contours.size());
+
+		for (unsigned int i = 0; i < contours.size(); i++) {
+			cv::convexHull(contours[i], convexHulls[i]);
+		}
+
+		drawAndShowContours(imgThresh.size(), convexHulls, "imgConvexHulls");
+
+		for (auto &convexHull : convexHulls) {
+			Blob possibleBlob(convexHull);
+
+			if (possibleBlob.currentBoundingRect.area() > 100 &&
+				possibleBlob.dblCurrentAspectRatio >= 0.2 &&
+				possibleBlob.dblCurrentAspectRatio <= 1.25 &&
+				possibleBlob.currentBoundingRect.width > 20 &&
+				possibleBlob.currentBoundingRect.height > 20 &&
+				possibleBlob.dblCurrentDiagonalSize > 30.0 &&
+				(cv::contourArea(possibleBlob.currentContour) / (double)possibleBlob.currentBoundingRect.area()) > 0.40) {
+				currentFrameBlobs.push_back(possibleBlob);
+			}
+		}
+
+		drawAndShowContours(imgThresh.size(), currentFrameBlobs, "imgCurrentFrameBlobs");
+
+		if (blnFirstFrame == true) {
+			for (auto &currentFrameBlob : currentFrameBlobs) {
+				blobs.push_back(currentFrameBlob);
+			}
+		}
+		else {
+			matchCurrentFrameBlobsToExistingBlobs(blobs, currentFrameBlobs);
+		}
+
+		drawAndShowContours(imgThresh.size(), blobs, "imgBlobs");
+
+		imgFrame2Copy = imgFrame2.clone();          // get another copy of frame 2 since we changed the previous frame 2 copy in the processing above
+
+		drawBlobInfoOnImage(blobs, imgFrame2Copy);
+
+		cv::imshow("imgFrame2Copy", imgFrame2Copy);
+
+		//cv::waitKey(0);                 // uncomment this line to go frame by frame for debugging
+
+		// now we prepare for the next iteration
+
+		currentFrameBlobs.clear();
+
+		imgFrame1 = imgFrame2.clone();           // move frame 1 up to where frame 2 is
+
+		if ((capVideo.get(CV_CAP_PROP_POS_FRAMES) + 1) < capVideo.get(CV_CAP_PROP_FRAME_COUNT)) {
+			capVideo.read(imgFrame2);
+		}
+		else {
+			std::cout << "end of video\n";
+			break;
+		}
+
+		blnFirstFrame = false;
+		frameCount++;
+		std::cout << "frame count = " << frameCount << "\n";
+		capVideo.set(CV_CAP_PROP_POS_FRAMES, nStartFrame+100*frameCount);
+		nCurrFrameNum = nStartFrame + 100 * frameCount;
+		if (nCurrFrameNum >= totalFrames) {
+			break;
+		}
+		chCheckForEscKey = cv::waitKey(1);
+	}
+
+	
+	if (chCheckForEscKey != 27) {               // if the user did not press esc (i.e. we reached the end of the video)
+		cv::waitKey(0);                         // hold the windows open to allow the "end of video" message to show
+	}
+	
+	// note that if the user did press esc, we don't need to hold the windows open, we can simply let the program end which will close the windows
+
+	return(0);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void matchCurrentFrameBlobsToExistingBlobs(std::vector<Blob> &existingBlobs, std::vector<Blob> &currentFrameBlobs) {
+
+	for (auto &existingBlob : existingBlobs) {
+
+		existingBlob.blnCurrentMatchFoundOrNewBlob = false;
+
+		existingBlob.predictNextPosition();
+	}
+
+	for (auto &currentFrameBlob : currentFrameBlobs) {
+
+		int intIndexOfLeastDistance = 0;
+		double dblLeastDistance = 100000.0;
+
+		for (unsigned int i = 0; i < existingBlobs.size(); i++) {
+			if (existingBlobs[i].blnStillBeingTracked == true) {
+				double dblDistance = distanceBetweenPoints(currentFrameBlob.centerPositions.back(), existingBlobs[i].predictedNextPosition);
+
+				if (dblDistance < dblLeastDistance) {
+					dblLeastDistance = dblDistance;
+					intIndexOfLeastDistance = i;
+				}
+			}
+		}
+
+		if (dblLeastDistance < currentFrameBlob.dblCurrentDiagonalSize * 1.15) {
+			addBlobToExistingBlobs(currentFrameBlob, existingBlobs, intIndexOfLeastDistance);
+		}
+		else {
+			addNewBlob(currentFrameBlob, existingBlobs);
+		}
+
+	}
+
+	for (auto &existingBlob : existingBlobs) {
+
+		if (existingBlob.blnCurrentMatchFoundOrNewBlob == false) {
+			existingBlob.intNumOfConsecutiveFramesWithoutAMatch++;
+		}
+
+		if (existingBlob.intNumOfConsecutiveFramesWithoutAMatch >= 5) {
+			existingBlob.blnStillBeingTracked = false;
+		}
+
+	}
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void addBlobToExistingBlobs(Blob &currentFrameBlob, std::vector<Blob> &existingBlobs, int &intIndex) {
+
+	existingBlobs[intIndex].currentContour = currentFrameBlob.currentContour;
+	existingBlobs[intIndex].currentBoundingRect = currentFrameBlob.currentBoundingRect;
+
+	existingBlobs[intIndex].centerPositions.push_back(currentFrameBlob.centerPositions.back());
+
+	existingBlobs[intIndex].dblCurrentDiagonalSize = currentFrameBlob.dblCurrentDiagonalSize;
+	existingBlobs[intIndex].dblCurrentAspectRatio = currentFrameBlob.dblCurrentAspectRatio;
+
+	existingBlobs[intIndex].blnStillBeingTracked = true;
+	existingBlobs[intIndex].blnCurrentMatchFoundOrNewBlob = true;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void addNewBlob(Blob &currentFrameBlob, std::vector<Blob> &existingBlobs) {
+
+	currentFrameBlob.blnCurrentMatchFoundOrNewBlob = true;
+
+	existingBlobs.push_back(currentFrameBlob);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+double distanceBetweenPoints(cv::Point point1, cv::Point point2) {
+
+	int intX = abs(point1.x - point2.x);
+	int intY = abs(point1.y - point2.y);
+
+	return(sqrt(pow(intX, 2) + pow(intY, 2)));
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void drawAndShowContours(cv::Size imageSize, std::vector<std::vector<cv::Point> > contours, std::string strImageName) {
+	cv::Mat image(imageSize, CV_8UC3, SCALAR_BLACK);
+
+	cv::drawContours(image, contours, -1, SCALAR_WHITE, -1);
+
+	cv::imshow(strImageName, image);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void drawAndShowContours(cv::Size imageSize, std::vector<Blob> blobs, std::string strImageName) {
+
+	cv::Mat image(imageSize, CV_8UC3, SCALAR_BLACK);
+
+	std::vector<std::vector<cv::Point> > contours;
+
+	for (auto &blob : blobs) {
+		if (blob.blnStillBeingTracked == true) {
+			contours.push_back(blob.currentContour);
+		}
+	}
+
+	cv::drawContours(image, contours, -1, SCALAR_WHITE, -1);
+
+	cv::imshow(strImageName, image);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void drawBlobInfoOnImage(std::vector<Blob> &blobs, cv::Mat &imgFrame2Copy) {
+
+	for (unsigned int i = 0; i < blobs.size(); i++) {
+
+		if (blobs[i].blnStillBeingTracked == true) {
+			cv::rectangle(imgFrame2Copy, blobs[i].currentBoundingRect, SCALAR_RED, 2);
+
+			int intFontFace = CV_FONT_HERSHEY_SIMPLEX;
+			double dblFontScale = blobs[i].dblCurrentDiagonalSize / 60.0;
+			int intFontThickness = (int)std::round(dblFontScale * 1.0);
+
+			cv::putText(imgFrame2Copy, std::to_string(i), blobs[i].centerPositions.back(), intFontFace, dblFontScale, SCALAR_GREEN, intFontThickness);
+		}
+	}
+}
+
+
+
+
+
+
+
+
