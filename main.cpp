@@ -12,6 +12,7 @@
 
 #define SHOW_STEPS            // un-comment or comment this line to show steps or not
 
+const int nPrint = 0;
 const int nNoOfBlockRow = 10;
 const int nNoOfBlockCol = 10;
 
@@ -119,7 +120,7 @@ int main(void) {
 
 	while (capVideo.isOpened() && chCheckForEscKey != 27) {
 
-		std::vector<Blob> currentFrameBlobs;
+		cv::imshow("OrigImage", imgFrame1);
 
 		cv::Mat imgFrame1Copy = imgFrame1.clone();
 		cv::Mat imgFrame2Copy = imgFrame2.clone();
@@ -150,6 +151,7 @@ int main(void) {
 		
 		cv::imshow("ThresholdImage", imgFrame1CopyLN);
 
+		/*
 		cv::Mat structuringElement3x3 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
 		cv::Mat structuringElement5x5 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
 		cv::Mat structuringElement7x7 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(7, 7));
@@ -191,15 +193,14 @@ int main(void) {
 
 
 		for (int i = 0; i < 256; i++) {
-			std::cout << "pixelCount[" << i << "] = " << pixelCount[i] << "\n";
+			if(nPrint) std::cout << "pixelCount[" << i << "] = " << pixelCount[i] << "\n";
 			if(abs(i- totalPixelWithMaximumCount) < 40)
 				pixelCount[i] = 0;
 		}
 
 		for (int i = 0; i < 256; i++) {
-			std::cout << "After normal pixelCount[" << i << "] = " << pixelCount[i] << "\n";
+			if (nPrint) std::cout << "After normal pixelCount[" << i << "] = " << pixelCount[i] << "\n";
 		}
-
 
 		//Find pixel with maximum count
 		int pixelWithMaximumCount = 0;
@@ -217,6 +218,7 @@ int main(void) {
 
 		//imgFrame1CopyLN = imgFrame1CopyLNOrig;
 
+		
 		for (int i = 0; i < frameHeight; i++) {
 			for (int j = 0; j < frameWidth; j++) {
 				cv::Scalar intensity2 = imgFrame1CopyLN.at<uchar>(i, j);
@@ -230,6 +232,7 @@ int main(void) {
 				}
 			}
 		}
+		*/
 
 		//Populate Array of Block with Block of current frame. 
 		for (int r = 0; r < nNoOfBlockRow; r++) {
@@ -251,7 +254,7 @@ int main(void) {
 						}
 					}
 				}
-				std::cout << "LNBlockObj[" << r << "][" << c << "] = " << LNBlockObj.nNoOfPoints << "\n";
+				if (nPrint) std::cout << "LNBlockObj[" << r << "][" << c << "] = " << LNBlockObj.nNoOfPoints << "\n";
 				(LNArrayOfBlockObj[r][c].arrayOfBlock).push_back(LNBlockObj);
 				(LNArrayOfBlockObj[r][c].nNoOfBlocks)++;
 
@@ -269,7 +272,7 @@ int main(void) {
 				diff += abs(intensity1.val[0] - intensity2.val[0]);
 				intensity1 = intensity2;
 			}
-			std::cout << "diff = " << diff << "\n";
+			if (nPrint) std::cout << "diff = " << diff << "\n";
 			if (diff < 5000) {
 				continuousDiff++;
 				if (continuousDiff < 2) {
@@ -288,101 +291,22 @@ int main(void) {
 		
 		cv::imshow("imgFrame1CopyLN", imgFrame1CopyLN);
 
-		cv::GaussianBlur(imgFrame1Copy, imgFrame1Copy, cv::Size(5, 5), 0);
-		cv::GaussianBlur(imgFrame2Copy, imgFrame2Copy, cv::Size(5, 5), 0);
-
-		cv::absdiff(imgFrame1Copy, imgFrame2Copy, imgDifference);
-
-		cv::threshold(imgDifference, imgThresh, 30, 255.0, CV_THRESH_BINARY);
-
-		cv::imshow("imgThresh", imgThresh);
-
-		//cv::Mat structuringElement3x3 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
-		//cv::Mat structuringElement5x5 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
-		//cv::Mat structuringElement7x7 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(7, 7));
-		//cv::Mat structuringElement9x9 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(9, 9));
-
-		/*
-		cv::dilate(imgThresh, imgThresh, structuringElement7x7);
-		cv::erode(imgThresh, imgThresh, structuringElement3x3);
-		*/
-
-		cv::dilate(imgThresh, imgThresh, structuringElement5x5);
-		cv::dilate(imgThresh, imgThresh, structuringElement5x5);
-		cv::erode(imgThresh, imgThresh, structuringElement5x5);
-
-
-		cv::Mat imgThreshCopy = imgThresh.clone();
-
-		std::vector<std::vector<cv::Point> > contours;
-
-		cv::findContours(imgThreshCopy, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-
-		drawAndShowContours(imgThresh.size(), contours, "imgContours");
-
-		std::vector<std::vector<cv::Point> > convexHulls(contours.size());
-
-		for (unsigned int i = 0; i < contours.size(); i++) {
-			cv::convexHull(contours[i], convexHulls[i]);
-		}
-
-		drawAndShowContours(imgThresh.size(), convexHulls, "imgConvexHulls");
-
-		for (auto &convexHull : convexHulls) {
-			Blob possibleBlob(convexHull);
-
-			if (possibleBlob.currentBoundingRect.area() > 100 &&
-				possibleBlob.dblCurrentAspectRatio >= 0.2 &&
-				possibleBlob.dblCurrentAspectRatio <= 1.25 &&
-				possibleBlob.currentBoundingRect.width > 20 &&
-				possibleBlob.currentBoundingRect.height > 20 &&
-				possibleBlob.dblCurrentDiagonalSize > 30.0 &&
-				(cv::contourArea(possibleBlob.currentContour) / (double)possibleBlob.currentBoundingRect.area()) > 0.40) {
-				currentFrameBlobs.push_back(possibleBlob);
-			}
-		}
-
-		drawAndShowContours(imgThresh.size(), currentFrameBlobs, "imgCurrentFrameBlobs");
-
-		if (blnFirstFrame == true) {
-			for (auto &currentFrameBlob : currentFrameBlobs) {
-				blobs.push_back(currentFrameBlob);
-			}
-		}
-		else {
-			matchCurrentFrameBlobsToExistingBlobs(blobs, currentFrameBlobs);
-		}
-
-		drawAndShowContours(imgThresh.size(), blobs, "imgBlobs");
-
-		imgFrame2Copy = imgFrame2.clone();          // get another copy of frame 2 since we changed the previous frame 2 copy in the processing above
-
-		drawBlobInfoOnImage(blobs, imgFrame2Copy);
-
-		cv::imshow("imgFrame2Copy", imgFrame2Copy);
-
 		//cv::waitKey(0);                 // uncomment this line to go frame by frame for debugging
 
 		// now we prepare for the next iteration
 
-		currentFrameBlobs.clear();
-
-		imgFrame1 = imgFrame2.clone();           // move frame 1 up to where frame 2 is
-
-		if ((capVideo.get(CV_CAP_PROP_POS_FRAMES) + 1) < capVideo.get(CV_CAP_PROP_FRAME_COUNT)) {
-			capVideo.read(imgFrame2);
-		}
-		else {
-			std::cout << "end of video\n";
-			break;
-		}
-
-		blnFirstFrame = false;
 		frameCount++;
 		std::cout << "frame count = " << frameCount << "\n";
 		capVideo.set(CV_CAP_PROP_POS_FRAMES, nStartFrame+100*frameCount);
 		nCurrFrameNum = nStartFrame + 100 * frameCount;
 		if (nCurrFrameNum >= totalFrames) {
+			break;
+		}
+		if ((capVideo.get(CV_CAP_PROP_POS_FRAMES)) < capVideo.get(CV_CAP_PROP_FRAME_COUNT)) {
+			capVideo.read(imgFrame1);
+		}
+		else {
+			std::cout << "end of video\n";
 			break;
 		}
 		chCheckForEscKey = cv::waitKey(1);
