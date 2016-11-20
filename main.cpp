@@ -122,15 +122,11 @@ int main(void) {
 
 		cv::imshow("OrigImage", imgFrame1);
 
-		cv::Mat imgFrame1Copy = imgFrame1.clone();
-		cv::Mat imgFrame2Copy = imgFrame2.clone();
 		cv::Mat imgFrame1CopyLN = imgFrame1.clone();
 
 		cv::Mat imgDifference;
 		cv::Mat imgThresh;
 
-		cv::cvtColor(imgFrame1Copy, imgFrame1Copy, CV_BGR2GRAY);
-		cv::cvtColor(imgFrame2Copy, imgFrame2Copy, CV_BGR2GRAY);
 		cv::cvtColor(imgFrame1CopyLN, imgFrame1CopyLN, CV_BGR2GRAY);
 
 		cv::imshow("GrayImage", imgFrame1CopyLN);
@@ -145,7 +141,6 @@ int main(void) {
 
 		cv::absdiff(imgFrame1CopyLN, imgFrame1CopyLNShift, imgFrame1CopyLN);
 		cv::imshow("DiffImage", imgFrame1CopyLN);
-
 
 		cv::threshold(imgFrame1CopyLN, imgFrame1CopyLN, 30, 255.0, CV_THRESH_BINARY);
 		
@@ -178,7 +173,6 @@ int main(void) {
 			}
 		}
 
-
 		//Create line to separate sentences of different line.
 		int continuousDiff = 0;
 		for (int i = 0; i < frameHeight; i++) {
@@ -204,7 +198,6 @@ int main(void) {
 			}
 			
 		}
-
 		
 		cv::imshow("imgFrame1CopyLN", imgFrame1CopyLN);
 
@@ -227,6 +220,17 @@ int main(void) {
 			break;
 		}
 		chCheckForEscKey = cv::waitKey(1);
+	}
+
+	int nNoOfFramesProcessed = LNArrayOfBlockObj[0][0].nNoOfBlocks;
+	for (int r = 0; r < nNoOfBlockRow; r++) {
+		for (int c = 0; c < nNoOfBlockCol; c++) {
+			std::cout << "WhitePixels[" << r << "][" << c << "] ";
+			for (int i = 0; i < nNoOfFramesProcessed; i++) {
+				std::cout << (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfPoints << " ";
+			}
+			std::cout << "\n";
+		}
 	}
 
 	
