@@ -13,6 +13,7 @@
 #define SHOW_STEPS            // un-comment or comment this line to show steps or not
 
 const int nPrint = 0;
+const int nPrintPostProcess = 0;
 const int nNoOfBlockRow = 10;
 const int nNoOfBlockCol = 10;
 
@@ -222,17 +223,51 @@ int main(void) {
 		chCheckForEscKey = cv::waitKey(1);
 	}
 
+	//Post process starts here
 	int nNoOfFramesProcessed = LNArrayOfBlockObj[0][0].nNoOfBlocks;
-	for (int r = 0; r < nNoOfBlockRow; r++) {
-		for (int c = 0; c < nNoOfBlockCol; c++) {
-			std::cout << "WhitePixels[" << r << "][" << c << "] ";
-			for (int i = 0; i < nNoOfFramesProcessed; i++) {
-				std::cout << (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfPoints << " ";
+
+	if (nPrintPostProcess) {
+		for (int r = 0; r < nNoOfBlockRow; r++) {
+			for (int c = 0; c < nNoOfBlockCol; c++) {
+				std::cout << "WhitePixels[" << r << "][" << c << "] ";
+				for (int i = 0; i < nNoOfFramesProcessed; i++) {
+					std::cout << (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfPoints << " ";
+				}
+				std::cout << "\n";
 			}
-			std::cout << "\n";
 		}
 	}
 
+	//Find possible LN Frames
+	std::vector<int> arrayOfPossibleLNFrame;
+	int nTotalBlocks = nNoOfBlockRow*nNoOfBlockCol;
+	for (int i = 1; i < nNoOfFramesProcessed; i++) {
+		int nTotalNotMatchingBlock = 0;
+		for (int r = 0; r < nNoOfBlockRow; r++) {
+			for (int c = 0; c < nNoOfBlockCol; c++) {
+				int prevNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i - 1]).nNoOfPoints;
+				int currNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfPoints;
+				//Ideally the difference should be zero.
+				if (abs(currNoOfPoints - prevNoOfPoints) > (currNoOfPoints / 20)) {
+					nTotalNotMatchingBlock++;
+				}
+			}
+		}
+		//If 80% of total block doesn't matches
+		std::cout << "totalBlocks = " << nTotalBlocks << "totalNotMatchingBlocks = " << nTotalNotMatchingBlock << "\n";
+		if (nTotalNotMatchingBlock * 10 > nTotalBlocks * 8) {
+			arrayOfPossibleLNFrame.push_back((LNArrayOfBlockObj[0][0].arrayOfBlock[i-1]).nFrameNum);
+		}
+	}
+
+	//Print the frames numbers.
+	std::cout << "Possible LN Frames are ";
+	for (int i = 0; i < arrayOfPossibleLNFrame.size(); i++) {
+		std::cout << arrayOfPossibleLNFrame[i] << " ";
+	}
+	std::cout << "\n";
+
+	//Post process ends here
 	
 	if (chCheckForEscKey != 27) {               // if the user did not press esc (i.e. we reached the end of the video)
 		cv::waitKey(0);                         // hold the windows open to allow the "end of video" message to show
