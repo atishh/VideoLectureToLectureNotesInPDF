@@ -236,6 +236,10 @@ int main(void) {
 	std::cout << "Possible LN Frames are ";
 	for (int i = 0; i < arrayOfPossibleLNFrame.size(); i++) {
 		std::cout << arrayOfPossibleLNFrame[i] << " ";
+		capVideo.set(CV_CAP_PROP_POS_FRAMES, arrayOfPossibleLNFrame[i]);
+		capVideo.read(imgFrame1);
+		std::string finalImage = "finalImage" + i;
+		cv::imshow(finalImage, imgFrame1);
 	}
 	std::cout << "\n";
 
