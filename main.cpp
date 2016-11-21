@@ -213,8 +213,11 @@ int main(void) {
 	//Find possible LN Frames
 	std::vector<int> arrayOfPossibleLNFrame;
 	int nTotalBlocks = nNoOfBlockRow*nNoOfBlockCol;
+	int nTotalNotMatchingBlock  = 0;
+	int nTotalNotMatchingBlockPrev = 0;
 	for (int i = 1; i < nNoOfFramesProcessed; i++) {
-		int nTotalNotMatchingBlock = 0;
+		nTotalNotMatchingBlockPrev = nTotalNotMatchingBlock;
+		nTotalNotMatchingBlock = 0;
 		for (int r = 0; r < nNoOfBlockRow; r++) {
 			for (int c = 0; c < nNoOfBlockCol; c++) {
 				int prevNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i - 1]).nNoOfPoints;
@@ -225,9 +228,10 @@ int main(void) {
 				}
 			}
 		}
-		//If 80% of total block doesn't matches
+		//If 80% of total block doesn't matches && atmost 20% of previous total block doesn't match 
 		std::cout << "totalBlocks = " << nTotalBlocks << "totalNotMatchingBlocks = " << nTotalNotMatchingBlock << "\n";
-		if (nTotalNotMatchingBlock * 10 > nTotalBlocks * 8) {
+		if ((nTotalNotMatchingBlock * 10 > nTotalBlocks * 8) &&
+			(nTotalNotMatchingBlockPrev * 10 < nTotalBlocks * 2)) {
 			arrayOfPossibleLNFrame.push_back((LNArrayOfBlockObj[0][0].arrayOfBlock[i-1]).nFrameNum);
 		}
 	}
