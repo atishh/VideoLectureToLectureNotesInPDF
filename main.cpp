@@ -174,34 +174,6 @@ int main(void) {
 			}
 		}
 
-		//Create line to separate sentences of different line.
-		int continuousDiff = 0;
-		for (int i = 0; i < frameHeight; i++) {
-			float diff = 0;
-			cv::Scalar intensity1 = imgFrame1CopyLN.at<uchar>(i, 0);
-			for (int j = 1; j < frameWidth; j++) {
-				cv::Scalar intensity2 = imgFrame1CopyLN.at<uchar>(i, j);
-				diff += abs(intensity1.val[0] - intensity2.val[0]);
-				intensity1 = intensity2;
-			}
-			if (nPrint) std::cout << "diff = " << diff << "\n";
-			if (diff < 5000) {
-				continuousDiff++;
-				if (continuousDiff < 2) {
-					for (int j = 0; j < frameWidth; j++) {
-						imgFrame1CopyLN.at<uchar>(i, j) = 128;
-					}
-				}
-				i = i + 10;
-			} 
-			else {
-				continuousDiff = 0;
-			}
-			
-		}
-		
-		cv::imshow("imgFrame1CopyLN", imgFrame1CopyLN);
-
 		//cv::waitKey(0);                 // uncomment this line to go frame by frame for debugging
 
 		// now we prepare for the next iteration
