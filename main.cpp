@@ -67,8 +67,9 @@ int main(void) {
 
 	std::vector<Blob> blobs;
 
-	//capVideo.open("../mod03lec10.mp4");
-	capVideo.open("../Lecture14.mp4");
+	capVideo.open("../mod03lec10.mp4");
+	//capVideo.open("../Lecture14.mp4");
+	//capVideo.open("../MIT3_054S15_L15_300k.mp4");
 
 	int nStartFrame = 50500;
 	capVideo.set(CV_CAP_PROP_POS_FRAMES, nStartFrame);
@@ -187,6 +188,8 @@ int main(void) {
 		if (nCurrFrameNum >= totalFrames) {
 			break;
 		}
+		if (frameCount > 500)
+			break;
 		if ((capVideo.get(CV_CAP_PROP_POS_FRAMES)) < capVideo.get(CV_CAP_PROP_FRAME_COUNT)) {
 			capVideo.read(imgFrame1);
 		}
@@ -236,9 +239,13 @@ int main(void) {
 			<< nTotalNotMatchingBlock << "\n";
 
 		if ((nTotalNotMatchingBlock * 10 > nTotalBlocks * 7) &&
-			(nTotalNotMatchingBlockPrev * 10 < nTotalBlocks * 1)) {
+			(nTotalNotMatchingBlockPrev * 10 < nTotalBlocks * 4)) {
 			arrayOfPossibleLNFrame.push_back((LNArrayOfBlockObj[0][0].arrayOfBlock[i-1]).nFrameNum);
 		}
+	}
+	//Check if Last Frame is correct, then add it.
+	if ((nTotalNotMatchingBlockPrev * 10 < nTotalBlocks * 3)) {
+		arrayOfPossibleLNFrame.push_back((LNArrayOfBlockObj[0][0].arrayOfBlock[nNoOfFramesProcessed-1]).nFrameNum);
 	}
 
 	//Print the frames numbers.
@@ -250,6 +257,7 @@ int main(void) {
 		std::string finalImage = "finalImage" + std::to_string(i) + std::to_string(0);
 		cv::imshow(finalImage, imgFrame1);
 		//Temporary code
+		/*
 		capVideo.set(CV_CAP_PROP_POS_FRAMES, arrayOfPossibleLNFrame[i]-200);
 		capVideo.read(imgFrame1);
 		finalImage = "finalImage" + std::to_string(i) + std::to_string(1);
@@ -266,6 +274,7 @@ int main(void) {
 		capVideo.read(imgFrame1);
 		finalImage = "finalImage" + std::to_string(i) + std::to_string(4);
 		cv::imshow(finalImage, imgFrame1);
+		*/
 	}
 	std::cout << "\n";
 
