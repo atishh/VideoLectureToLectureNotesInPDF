@@ -67,8 +67,8 @@ int main(void) {
 
 	std::vector<Blob> blobs;
 
-	capVideo.open("../mod03lec10.mp4");
-	//capVideo.open("../Lecture14.mp4");
+	//capVideo.open("../mod03lec10.mp4");
+	capVideo.open("../Lecture14.mp4");
 
 	int nStartFrame = 50500;
 	capVideo.set(CV_CAP_PROP_POS_FRAMES, nStartFrame);
@@ -90,11 +90,13 @@ int main(void) {
 	int frameWidth = capVideo.get(CV_CAP_PROP_FRAME_WIDTH);
 	int frameHeight = capVideo.get(CV_CAP_PROP_FRAME_HEIGHT);
 	int totalFrames = capVideo.get(CV_CAP_PROP_FRAME_COUNT);
+	int fps = capVideo.get(CV_CAP_PROP_FPS);
 
 	int nNoOfPixelsOfBlockRow = frameHeight / nNoOfBlockRow;
 	int nNoOfPixelsOfBlockCol = frameWidth / nNoOfBlockRow;
 
-	std::cout << "frame width = " << frameWidth << "frame height = " << frameHeight << "\n";
+	std::cout << "frame width = " << frameWidth << " frame height = " << frameHeight << "\n";
+	std::cout << "total frames = " << totalFrames << " fps = " << fps << "\n";
 	std::cout << "nNoOfPixelsOfBlockRow = " << nNoOfPixelsOfBlockRow << "\n";
 	std::cout << "nNoOfPixelsOfBlockCol = " << nNoOfPixelsOfBlockCol << "\n";
 
@@ -223,15 +225,18 @@ int main(void) {
 				int prevNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i - 1]).nNoOfPoints;
 				int currNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfPoints;
 				//Ideally the difference should be zero.
-				if (abs(currNoOfPoints - prevNoOfPoints) > (currNoOfPoints / 20)) {
+				if (abs(currNoOfPoints - prevNoOfPoints) > (currNoOfPoints / 10)) {
 					nTotalNotMatchingBlock++;
 				}
 			}
 		}
 		//If 80% of total block doesn't matches && atmost 20% of previous total block doesn't match 
-		std::cout << "totalBlocks = " << nTotalBlocks << "totalNotMatchingBlocks = " << nTotalNotMatchingBlock << "\n";
-		if ((nTotalNotMatchingBlock * 10 > nTotalBlocks * 8) &&
-			(nTotalNotMatchingBlockPrev * 10 < nTotalBlocks * 2)) {
+		std::cout << "Frame = " << (LNArrayOfBlockObj[0][0].arrayOfBlock[i - 1]).nFrameNum  
+			<<" totalBlocks = " << nTotalBlocks << " totalNotMatchingBlocks = " 
+			<< nTotalNotMatchingBlock << "\n";
+
+		if ((nTotalNotMatchingBlock * 10 > nTotalBlocks * 7) &&
+			(nTotalNotMatchingBlockPrev * 10 < nTotalBlocks * 1)) {
 			arrayOfPossibleLNFrame.push_back((LNArrayOfBlockObj[0][0].arrayOfBlock[i-1]).nFrameNum);
 		}
 	}
@@ -242,7 +247,24 @@ int main(void) {
 		std::cout << arrayOfPossibleLNFrame[i] << " ";
 		capVideo.set(CV_CAP_PROP_POS_FRAMES, arrayOfPossibleLNFrame[i]);
 		capVideo.read(imgFrame1);
-		std::string finalImage = "finalImage" + i;
+		std::string finalImage = "finalImage" + std::to_string(i) + std::to_string(0);
+		cv::imshow(finalImage, imgFrame1);
+		//Temporary code
+		capVideo.set(CV_CAP_PROP_POS_FRAMES, arrayOfPossibleLNFrame[i]-200);
+		capVideo.read(imgFrame1);
+		finalImage = "finalImage" + std::to_string(i) + std::to_string(1);
+		cv::imshow(finalImage, imgFrame1);
+		capVideo.set(CV_CAP_PROP_POS_FRAMES, arrayOfPossibleLNFrame[i]-100);
+		capVideo.read(imgFrame1);
+		finalImage = "finalImage" + std::to_string(i) + std::to_string(2);
+		cv::imshow(finalImage, imgFrame1);
+		capVideo.set(CV_CAP_PROP_POS_FRAMES, arrayOfPossibleLNFrame[i] + 100);
+		capVideo.read(imgFrame1);
+		finalImage = "finalImage" + std::to_string(i) + std::to_string(3);
+		cv::imshow(finalImage, imgFrame1);
+		capVideo.set(CV_CAP_PROP_POS_FRAMES, arrayOfPossibleLNFrame[i] + 200);
+		capVideo.read(imgFrame1);
+		finalImage = "finalImage" + std::to_string(i) + std::to_string(4);
 		cv::imshow(finalImage, imgFrame1);
 	}
 	std::cout << "\n";
