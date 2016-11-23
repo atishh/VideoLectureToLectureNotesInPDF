@@ -187,6 +187,13 @@ int main(void) {
 				int startPosX = c*nNoOfPixelsOfBlockCol;
 				int endPosX = (c+1)*nNoOfPixelsOfBlockCol;
 				cv::rectangle(imgFrame1CopyLN, cv::Point(startPosX, startPosY), cv::Point(endPosX, endPosY), cv::Scalar(110, 220, 0), 2, 8);
+				int intFontFace = CV_FONT_HERSHEY_SIMPLEX;
+				int nCurrentBlock = LNArrayOfBlockObj[r][c].nNoOfBlocks - 1;
+				int noOfWhitePixels = (LNArrayOfBlockObj[r][c].arrayOfBlock[nCurrentBlock]).nNoOfPoints;
+				int textPointX = (startPosX + endPosX) / 2;
+				int textPointY = (startPosY + endPosY) / 2;
+				cv::putText(imgFrame1CopyLN, std::to_string(noOfWhitePixels), cv::Point(textPointX, textPointY), intFontFace, 1, cv::Scalar(128, 128, 128), 1);
+			
 			}
 		}
 		
