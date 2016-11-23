@@ -96,7 +96,7 @@ int main(void) {
 	int fps = capVideo.get(CV_CAP_PROP_FPS);
 
 	int nNoOfPixelsOfBlockRow = frameHeight / nNoOfBlockRow;
-	int nNoOfPixelsOfBlockCol = frameWidth / nNoOfBlockRow;
+	int nNoOfPixelsOfBlockCol = frameWidth / nNoOfBlockCol;
 
 	std::cout << "frame width = " << frameWidth << " frame height = " << frameHeight << "\n";
 	std::cout << "total frames = " << totalFrames << " fps = " << fps << "\n";
@@ -178,6 +178,22 @@ int main(void) {
 
 			}
 		}
+
+		//Draw lines for diagnostics.
+		for (int r = 0; r < nNoOfBlockRow; r++) {
+			int startPosY = r*nNoOfPixelsOfBlockRow;
+			int endPosX = frameWidth;
+			cv::line(imgFrame1CopyLN, cv::Point(0, startPosY), cv::Point(endPosX, startPosY), cv::Scalar(110, 220, 0), 2, 8);
+		}
+		
+		for (int c = 0; c < nNoOfBlockCol; c++) {
+			int startPosX = c*nNoOfPixelsOfBlockCol;
+			int endPosY = frameHeight;
+			cv::line(imgFrame1CopyLN, cv::Point(startPosX,0), cv::Point(startPosX,endPosY), cv::Scalar(110, 220, 0), 2, 8);
+		}
+		
+
+		cv::imshow("ImageWithLines", imgFrame1CopyLN);
 
 		//cv::waitKey(0);                 // uncomment this line to go frame by frame for debugging
 
