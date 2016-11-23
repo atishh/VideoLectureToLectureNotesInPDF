@@ -16,6 +16,7 @@ const int nPrint = 0;
 const int nPrintPostProcess = 0;
 const int nNoOfBlockRow = 10;
 const int nNoOfBlockCol = 10;
+const int nIgnoreNextFrames = 100;
 
 // global variables ///////////////////////////////////////////////////////////////////////////////
 const cv::Scalar SCALAR_BLACK = cv::Scalar(0.0, 0.0, 0.0);
@@ -67,9 +68,10 @@ int main(void) {
 
 	std::vector<Blob> blobs;
 
-	capVideo.open("../mod03lec10.mp4");
-	//capVideo.open("../Lecture14.mp4");
+	//capVideo.open("../mod03lec10.mp4");
+	capVideo.open("../Lecture14.mp4");
 	//capVideo.open("../MIT3_054S15_L15_300k.mp4");
+	//capVideo.open("../MIT6_006F11_lec02_300k.mp4");
 
 	int nStartFrame = 50500;
 	capVideo.set(CV_CAP_PROP_POS_FRAMES, nStartFrame);
@@ -183,13 +185,13 @@ int main(void) {
 
 		frameCount++;
 		std::cout << "frame count = " << frameCount << "\n";
-		capVideo.set(CV_CAP_PROP_POS_FRAMES, nStartFrame+100*frameCount);
-		nCurrFrameNum = nStartFrame + 100 * frameCount;
+		capVideo.set(CV_CAP_PROP_POS_FRAMES, nStartFrame + nIgnoreNextFrames * frameCount);
+		nCurrFrameNum = nStartFrame + nIgnoreNextFrames * frameCount;
 		if (nCurrFrameNum >= totalFrames) {
 			break;
 		}
-		if (frameCount > 500)
-			break;
+	//	if (frameCount > 500)
+	//		break;
 		if ((capVideo.get(CV_CAP_PROP_POS_FRAMES)) < capVideo.get(CV_CAP_PROP_FRAME_COUNT)) {
 			capVideo.read(imgFrame1);
 		}
@@ -244,7 +246,7 @@ int main(void) {
 		}
 	}
 	//Check if Last Frame is correct, then add it.
-	if ((nTotalNotMatchingBlockPrev * 10 < nTotalBlocks * 3)) {
+	if ((nTotalNotMatchingBlock * 10 < nTotalBlocks * 3)) {
 		arrayOfPossibleLNFrame.push_back((LNArrayOfBlockObj[0][0].arrayOfBlock[nNoOfFramesProcessed-1]).nFrameNum);
 	}
 
