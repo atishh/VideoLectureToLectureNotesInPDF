@@ -250,7 +250,8 @@ int main(void) {
 				int prevNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i - 1]).nNoOfPoints;
 				int currNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfPoints;
 				//Ideally the difference should be zero.
-				if (abs(currNoOfPoints - prevNoOfPoints) > (currNoOfPoints / 10)) {
+				int diff = abs(currNoOfPoints - prevNoOfPoints);
+				if ((diff > (currNoOfPoints / 7)) && (diff > 10)) {
 					nTotalNotMatchingBlock++;
 				}
 			}
