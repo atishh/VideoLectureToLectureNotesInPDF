@@ -179,20 +179,17 @@ int main(void) {
 			}
 		}
 
-		//Draw lines for diagnostics.
+		//Draw rectangles for diagnostics.
 		for (int r = 0; r < nNoOfBlockRow; r++) {
-			int startPosY = r*nNoOfPixelsOfBlockRow;
-			int endPosX = frameWidth;
-			cv::line(imgFrame1CopyLN, cv::Point(0, startPosY), cv::Point(endPosX, startPosY), cv::Scalar(110, 220, 0), 2, 8);
+			for (int c = 0; c < nNoOfBlockCol; c++) {
+				int startPosY = r*nNoOfPixelsOfBlockRow;
+				int endPosY = (r+1)*nNoOfPixelsOfBlockRow;
+				int startPosX = c*nNoOfPixelsOfBlockCol;
+				int endPosX = (c+1)*nNoOfPixelsOfBlockCol;
+				cv::rectangle(imgFrame1CopyLN, cv::Point(startPosX, startPosY), cv::Point(endPosX, endPosY), cv::Scalar(110, 220, 0), 2, 8);
+			}
 		}
 		
-		for (int c = 0; c < nNoOfBlockCol; c++) {
-			int startPosX = c*nNoOfPixelsOfBlockCol;
-			int endPosY = frameHeight;
-			cv::line(imgFrame1CopyLN, cv::Point(startPosX,0), cv::Point(startPosX,endPosY), cv::Scalar(110, 220, 0), 2, 8);
-		}
-		
-
 		cv::imshow("ImageWithLines", imgFrame1CopyLN);
 
 		//cv::waitKey(0);                 // uncomment this line to go frame by frame for debugging
