@@ -9,6 +9,7 @@
 
 #include "Blob.h"
 #include "LNArrayOfBlock.h"
+#include "LNFrame.h"
 
 #define SHOW_STEPS            // un-comment or comment this line to show steps or not
 
@@ -58,6 +59,40 @@ inline cv::Mat translateImg(cv::Mat &img, cv::Mat &imgShift, int offsetx, int of
     warpAffine(img,imgShift,trans_mat,img.size());
 	return trans_mat;
 }
+
+LNFramesOfBlocks calculateFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoOfBlockCol]
+										, int nCurrLNOutputBlockNum 
+										, int nPrevLNOutputBlockNum)
+{
+	LNFramesOfBlocks LNFramesOfBlocksObj;
+	int** ary = new int*[nNoOfBlockRow];
+	for (int i = 0; i < nNoOfBlockRow; ++i)
+		ary[i] = new int[nNoOfBlockCol];
+	LNFramesOfBlocksObj.nFrameNumOfBlock = ary;
+	std::cout << " Final Frame no "
+		<< (LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNOutputBlockNum]).nFrameNum
+		<< "\n";
+	for (int r = 0; r < nNoOfBlockRow; r++) {
+		for (int c = 0; c < nNoOfBlockCol; c++) {
+			int nCorrectFrameNo = (LNArrayOfBlockObj[r][c].arrayOfBlock[nCurrLNOutputBlockNum]).nFrameNum;
+			//Iterate backward till matching frame of block is found
+			for (int i = nCurrLNOutputBlockNum; i > (nPrevLNOutputBlockNum + 1); i--) {
+				int nCurrNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfPoints;
+				int nPrevNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i - 1]).nNoOfPoints;
+				int diff = abs(nCurrNoOfPoints - nPrevNoOfPoints);
+				if ((nCurrNoOfPoints > 10) && (diff <= (nCurrNoOfPoints / 20))) {
+					nCorrectFrameNo = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nFrameNum;
+					break;
+				}
+			}
+			ary[r][c] = nCorrectFrameNo;
+			std::cout << nCorrectFrameNo << " ";
+		}
+		std::cout << "\n";
+	}
+	return LNFramesOfBlocksObj;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int main(void) {
 
@@ -103,7 +138,7 @@ int main(void) {
 	std::cout << "nNoOfPixelsOfBlockRow = " << nNoOfPixelsOfBlockRow << "\n";
 	std::cout << "nNoOfPixelsOfBlockCol = " << nNoOfPixelsOfBlockCol << "\n";
 
-	LNArrayOfBlock LNArrayOfBlockObj[nNoOfBlockRow][nNoOfBlockRow];
+	LNArrayOfBlock LNArrayOfBlockObj[nNoOfBlockRow][nNoOfBlockCol];
 	for (int r = 0; r < nNoOfBlockRow; r++) {
 		for (int c = 0; c < nNoOfBlockCol; c++) {
 			LNArrayOfBlockObj[r][c].nStartRow = r*nNoOfPixelsOfBlockRow;
@@ -210,8 +245,8 @@ int main(void) {
 		if (nCurrFrameNum >= totalFrames) {
 			break;
 		}
-	//	if (frameCount > 500)
-	//		break;
+		if (frameCount > 100)
+			break;
 		if ((capVideo.get(CV_CAP_PROP_POS_FRAMES)) < capVideo.get(CV_CAP_PROP_FRAME_COUNT)) {
 			capVideo.read(imgFrame1);
 		}
@@ -237,11 +272,16 @@ int main(void) {
 		}
 	}
 
-	//Find possible LN Frames
+	std::vector<LNFramesOfBlocks> arrayOfFramesOfBlocks;
+
+	//Find possible LN output Frames
 	std::vector<int> arrayOfPossibleLNFrame;
 	int nTotalBlocks = nNoOfBlockRow*nNoOfBlockCol;
 	int nTotalNotMatchingBlock  = 0;
 	int nTotalNotMatchingBlockPrev = 0;
+	int nCurrLNOutputBlockNum = 0;
+	int nPrevLNOutputBlockNum = 0;
+
 	for (int i = 1; i < nNoOfFramesProcessed; i++) {
 		nTotalNotMatchingBlockPrev = nTotalNotMatchingBlock;
 		nTotalNotMatchingBlock = 0;
@@ -256,14 +296,21 @@ int main(void) {
 				}
 			}
 		}
-		//If 80% of total block doesn't matches && atmost 20% of previous total block doesn't match 
+		 
 		std::cout << "Frame = " << (LNArrayOfBlockObj[0][0].arrayOfBlock[i - 1]).nFrameNum  
 			<<" totalBlocks = " << nTotalBlocks << " totalNotMatchingBlocks = " 
 			<< nTotalNotMatchingBlock << "\n";
 
+		//If 80% of total block doesn't matches && atmost 20% of previous total block doesn't match
 		if ((nTotalNotMatchingBlock * 10 > nTotalBlocks * 7) &&
-			(nTotalNotMatchingBlockPrev * 10 < nTotalBlocks * 4)) {
-			arrayOfPossibleLNFrame.push_back((LNArrayOfBlockObj[0][0].arrayOfBlock[i-1]).nFrameNum);
+			(nTotalNotMatchingBlockPrev * 10 < nTotalBlocks * 3)) {
+			nPrevLNOutputBlockNum = nCurrLNOutputBlockNum;
+			nCurrLNOutputBlockNum = i - 1;
+			int nCurrFrameNum = (LNArrayOfBlockObj[0][0].arrayOfBlock[i - 1]).nFrameNum;
+			arrayOfPossibleLNFrame.push_back(nCurrFrameNum);
+			LNFramesOfBlocks LNFramesOfBlocksObj;
+			LNFramesOfBlocksObj = calculateFramesOfBlocks(LNArrayOfBlockObj, nCurrLNOutputBlockNum,
+				nPrevLNOutputBlockNum);
 		}
 	}
 	//Check if Last Frame is correct, then add it.

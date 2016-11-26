@@ -128,6 +128,7 @@
     <ClInclude Include="Blob.h" />
     <ClInclude Include="LNArrayOfBlock.h" />
     <ClInclude Include="LNBlock.h" />
+    <ClInclude Include="LNFrame.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

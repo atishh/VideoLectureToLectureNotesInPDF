@@ -32,5 +32,8 @@
     <ClInclude Include="LNArrayOfBlock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LNFrame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
