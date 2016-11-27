@@ -311,11 +311,19 @@ int main(void) {
 			LNFramesOfBlocks LNFramesOfBlocksObj;
 			LNFramesOfBlocksObj = calculateFramesOfBlocks(LNArrayOfBlockObj, nCurrLNOutputBlockNum,
 				nPrevLNOutputBlockNum);
+			arrayOfFramesOfBlocks.push_back(LNFramesOfBlocksObj);
 		}
 	}
 	//Check if Last Frame is correct, then add it.
 	if ((nTotalNotMatchingBlock * 10 < nTotalBlocks * 3)) {
-		arrayOfPossibleLNFrame.push_back((LNArrayOfBlockObj[0][0].arrayOfBlock[nNoOfFramesProcessed-1]).nFrameNum);
+		nPrevLNOutputBlockNum = nCurrLNOutputBlockNum;
+		nCurrLNOutputBlockNum = nNoOfFramesProcessed - 1;
+		int nCurrFrameNum = (LNArrayOfBlockObj[0][0].arrayOfBlock[nNoOfFramesProcessed - 1]).nFrameNum;
+		arrayOfPossibleLNFrame.push_back(nCurrFrameNum);
+		LNFramesOfBlocks LNFramesOfBlocksObj;
+		LNFramesOfBlocksObj = calculateFramesOfBlocks(LNArrayOfBlockObj, nCurrLNOutputBlockNum,
+			nPrevLNOutputBlockNum);
+		arrayOfFramesOfBlocks.push_back(LNFramesOfBlocksObj);
 	}
 
 	//Print the frames numbers.
