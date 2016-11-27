@@ -69,6 +69,8 @@ LNFramesOfBlocks calculateFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoO
 	for (int i = 0; i < nNoOfBlockRow; ++i)
 		ary[i] = new int[nNoOfBlockCol];
 	LNFramesOfBlocksObj.nFrameNumOfBlock = ary;
+	LNFramesOfBlocksObj.nPrevFrameNum = 
+		(LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNOutputBlockNum-1]).nFrameNum;
 	std::cout << " Final Frame no "
 		<< (LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNOutputBlockNum]).nFrameNum
 		<< "\n";
@@ -80,7 +82,8 @@ LNFramesOfBlocks calculateFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoO
 				int nCurrNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfPoints;
 				int nPrevNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i - 1]).nNoOfPoints;
 				int diff = abs(nCurrNoOfPoints - nPrevNoOfPoints);
-				if ((nCurrNoOfPoints > 10) && (diff <= (nCurrNoOfPoints / 20))) {
+				if (((nCurrNoOfPoints > 20) && (diff <= (nCurrNoOfPoints / 7))) ||
+					((nCurrNoOfPoints <= 20) && (diff < 10)))  {
 					nCorrectFrameNo = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nFrameNum;
 					break;
 				}
@@ -98,9 +101,14 @@ void displayFramesOfBlocks(cv::VideoCapture &capVideo, LNFramesOfBlocks LNFrames
 	LNArrayOfBlock LNArrayOfBlockObj[][nNoOfBlockCol])
 {
 	cv::Mat imgFrame1, imgFrame2;
+	int nPrevFrameNum = LNFramesOfBlocksObj.nPrevFrameNum;
+	capVideo.set(CV_CAP_PROP_POS_FRAMES, nPrevFrameNum);
+	capVideo.read(imgFrame1);
+	std::string finalImage = "PreviousImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
+	cv::imshow(finalImage, imgFrame1);
 	capVideo.set(CV_CAP_PROP_POS_FRAMES, nLNOutputFrameNum);
 	capVideo.read(imgFrame1);
-	std::string finalImage = "IntermediateImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
+	finalImage = "IntermediateImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
 	cv::imshow(finalImage, imgFrame1);
 
 	//Print the frames numbers.
@@ -289,7 +297,7 @@ int main(void) {
 		if (nCurrFrameNum >= totalFrames) {
 			break;
 		}
-		if (frameCount > 100)
+		if (frameCount > 500)
 			break;
 		if ((capVideo.get(CV_CAP_PROP_POS_FRAMES)) < capVideo.get(CV_CAP_PROP_FRAME_COUNT)) {
 			capVideo.read(imgFrame1);
