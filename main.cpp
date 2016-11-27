@@ -93,6 +93,27 @@ LNFramesOfBlocks calculateFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoO
 	return LNFramesOfBlocksObj;
 }
 
+void printFramesOfBlocks(LNFramesOfBlocks LNFramesOfBlocksObj,
+	 int nLNOutputFrameNum, std::vector<int> &arrayOfPossibleLNFrame)
+{
+	//Print the frames numbers.
+	std::cout << "Possible LN Frames are ";
+	for (int i = 0; i < arrayOfPossibleLNFrame.size(); i++) {
+		int nLNOutputFrameNum = arrayOfPossibleLNFrame[i];
+		std::cout << nLNOutputFrameNum << " ";
+	}
+	std::cout << "\n";
+
+	std::cout << " Final Frame no " << nLNOutputFrameNum << "\n";
+	int** ary = LNFramesOfBlocksObj.nFrameNumOfBlock;
+	for (int r = 0; r < nNoOfBlockRow; r++) {
+		for (int c = 0; c < nNoOfBlockCol; c++) {
+			std::cout << ary[r][c] << " ";
+		}
+		std::cout << "\n";
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int main(void) {
 
@@ -326,11 +347,16 @@ int main(void) {
 		arrayOfFramesOfBlocks.push_back(LNFramesOfBlocksObj);
 	}
 
-	//Print the frames numbers.
-	std::cout << "Possible LN Frames are ";
+
+
 	for (int i = 0; i < arrayOfPossibleLNFrame.size(); i++) {
-		std::cout << arrayOfPossibleLNFrame[i] << " ";
-		capVideo.set(CV_CAP_PROP_POS_FRAMES, arrayOfPossibleLNFrame[i]);
+		int nLNOutputFrameNum = arrayOfPossibleLNFrame[i];
+		LNFramesOfBlocks LNFramesOfBlocksObj;
+		LNFramesOfBlocksObj = arrayOfFramesOfBlocks[i];
+		printFramesOfBlocks(LNFramesOfBlocksObj, nLNOutputFrameNum, 
+			arrayOfPossibleLNFrame);
+
+		capVideo.set(CV_CAP_PROP_POS_FRAMES, nLNOutputFrameNum);
 		capVideo.read(imgFrame1);
 		std::string finalImage = "finalImage" + std::to_string(i) + std::to_string(0);
 		cv::imshow(finalImage, imgFrame1);
