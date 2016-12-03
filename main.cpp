@@ -99,17 +99,17 @@ LNFramesOfBlocks calculateFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoO
 
 void displayFramesOfBlocks(cv::VideoCapture &capVideo, LNFramesOfBlocks LNFramesOfBlocksObj,
 	int nLNOutputFrameNum, std::vector<int> &arrayOfPossibleLNFrame,
-	LNArrayOfBlock LNArrayOfBlockObj[][nNoOfBlockCol])
+	LNArrayOfBlock LNArrayOfBlockObj[][nNoOfBlockCol], cv::Mat& imgFrame1)
 {
-	cv::Mat imgFrame1, imgFrame2;
+	cv::Mat imgFrame2;
 	int nPrevFrameNum = LNFramesOfBlocksObj.nPrevFrameNum;
 	capVideo.set(CV_CAP_PROP_POS_FRAMES, nPrevFrameNum);
 	capVideo.read(imgFrame1);
-	std::string finalImage = "PreviousImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
+	std::string finalImageStr = "PreviousImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
 //	cv::imshow(finalImage, imgFrame1);
 	capVideo.set(CV_CAP_PROP_POS_FRAMES, nLNOutputFrameNum);
 	capVideo.read(imgFrame1);
-	finalImage = "IntermediateImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
+	finalImageStr = "IntermediateImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
 //	cv::imshow(finalImage, imgFrame1);
 
 	//Print the frames numbers.
@@ -142,27 +142,7 @@ void displayFramesOfBlocks(cv::VideoCapture &capVideo, LNFramesOfBlocks LNFrames
 		}
 		std::cout << "\n";
 	}
-	finalImage = "FinalImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
-	std::string finalImage1 = "../tmp/" + finalImage + ".jpg";
-	cv::imshow(finalImage1, imgFrame1);
-	cv::imwrite(finalImage1, imgFrame1);
 
-	Magick::Image magicKImage;
-	magicKImage.read(finalImage1);
-	std::list<Magick::Image> imageList;
-	Magick::readImages(&imageList, finalImage1);
-	Magick::readImages(&imageList, finalImage1);
-	Magick::readImages(&imageList, finalImage1);
-	Magick::readImages(&imageList, finalImage1);
-
-	std::string finalImage2 = "../tmpM/" + finalImage + ".pdf";
-	magicKImage.write(finalImage2);
-
-	std::string finalImage3 = "../tmpP/" + finalImage + ".pdf";
-	//Magick::Image appended;
-	//Magick::appendImages(&appended, imageList.begin(), imageList.end(), true);
-	//appended.write(finalImage3);
-	Magick::writeImages(imageList.begin(), imageList.end(), finalImage3);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -408,39 +388,26 @@ int main(void) {
 	}
 
 
-
+	std::list<Magick::Image> imageList;
 	for (int i = 0; i < arrayOfPossibleLNFrame.size(); i++) {
 		int nLNOutputFrameNum = arrayOfPossibleLNFrame[i];
 		LNFramesOfBlocks LNFramesOfBlocksObj;
 		LNFramesOfBlocksObj = arrayOfFramesOfBlocks[i];
+		cv::Mat imgFrame1;
 		displayFramesOfBlocks(capVideo, LNFramesOfBlocksObj, nLNOutputFrameNum, 
-			arrayOfPossibleLNFrame, LNArrayOfBlockObj);
+			arrayOfPossibleLNFrame, LNArrayOfBlockObj, imgFrame1);
 
-//		capVideo.set(CV_CAP_PROP_POS_FRAMES, nLNOutputFrameNum);
-//		capVideo.read(imgFrame1);
-//		std::string finalImage = "finalImage" + std::to_string(i) + std::to_string(0);
-//		cv::imshow(finalImage, imgFrame1);
-		//Temporary code
-		/*
-		capVideo.set(CV_CAP_PROP_POS_FRAMES, arrayOfPossibleLNFrame[i]-200);
-		capVideo.read(imgFrame1);
-		finalImage = "finalImage" + std::to_string(i) + std::to_string(1);
-		cv::imshow(finalImage, imgFrame1);
-		capVideo.set(CV_CAP_PROP_POS_FRAMES, arrayOfPossibleLNFrame[i]-100);
-		capVideo.read(imgFrame1);
-		finalImage = "finalImage" + std::to_string(i) + std::to_string(2);
-		cv::imshow(finalImage, imgFrame1);
-		capVideo.set(CV_CAP_PROP_POS_FRAMES, arrayOfPossibleLNFrame[i] + 100);
-		capVideo.read(imgFrame1);
-		finalImage = "finalImage" + std::to_string(i) + std::to_string(3);
-		cv::imshow(finalImage, imgFrame1);
-		capVideo.set(CV_CAP_PROP_POS_FRAMES, arrayOfPossibleLNFrame[i] + 200);
-		capVideo.read(imgFrame1);
-		finalImage = "finalImage" + std::to_string(i) + std::to_string(4);
-		cv::imshow(finalImage, imgFrame1);
-		*/
+		std::string finalImageStr = "FinalImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
+		std::string finalImageStr1 = "../tmp/" + finalImageStr + ".jpg";
+		cv::imshow(finalImageStr1, imgFrame1);
+		cv::imwrite(finalImageStr1, imgFrame1);
+
+		Magick::readImages(&imageList, finalImageStr1);
 	}
 	std::cout << "\n";
+	//Write the final pdf
+	std::string finalImageStr3 = "../tmpP/finalImage.pdf";
+	Magick::writeImages(imageList.begin(), imageList.end(), finalImageStr3);
 
 	//Post process ends here
 	
