@@ -10,6 +10,7 @@
 #include "Blob.h"
 #include "LNArrayOfBlock.h"
 #include "LNFrame.h"
+#include "Magick++.h"
 
 #define SHOW_STEPS            // un-comment or comment this line to show steps or not
 
@@ -105,11 +106,11 @@ void displayFramesOfBlocks(cv::VideoCapture &capVideo, LNFramesOfBlocks LNFrames
 	capVideo.set(CV_CAP_PROP_POS_FRAMES, nPrevFrameNum);
 	capVideo.read(imgFrame1);
 	std::string finalImage = "PreviousImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
-	cv::imshow(finalImage, imgFrame1);
+//	cv::imshow(finalImage, imgFrame1);
 	capVideo.set(CV_CAP_PROP_POS_FRAMES, nLNOutputFrameNum);
 	capVideo.read(imgFrame1);
 	finalImage = "IntermediateImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
-	cv::imshow(finalImage, imgFrame1);
+//	cv::imshow(finalImage, imgFrame1);
 
 	//Print the frames numbers.
 	std::cout << "Possible LN Frames are ";
@@ -142,7 +143,26 @@ void displayFramesOfBlocks(cv::VideoCapture &capVideo, LNFramesOfBlocks LNFrames
 		std::cout << "\n";
 	}
 	finalImage = "FinalImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
-	cv::imshow(finalImage, imgFrame1);
+	std::string finalImage1 = "../tmp/" + finalImage + ".jpg";
+	cv::imshow(finalImage1, imgFrame1);
+	cv::imwrite(finalImage1, imgFrame1);
+
+	Magick::Image magicKImage;
+	magicKImage.read(finalImage1);
+	std::list<Magick::Image> imageList;
+	Magick::readImages(&imageList, finalImage1);
+	Magick::readImages(&imageList, finalImage1);
+	Magick::readImages(&imageList, finalImage1);
+	Magick::readImages(&imageList, finalImage1);
+
+	std::string finalImage2 = "../tmpM/" + finalImage + ".pdf";
+	magicKImage.write(finalImage2);
+
+	std::string finalImage3 = "../tmpP/" + finalImage + ".pdf";
+	//Magick::Image appended;
+	//Magick::appendImages(&appended, imageList.begin(), imageList.end(), true);
+	//appended.write(finalImage3);
+	Magick::writeImages(imageList.begin(), imageList.end(), finalImage3);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -156,11 +176,16 @@ int main(void) {
 	std::vector<Blob> blobs;
 
 	//capVideo.open("../mod03lec10.mp4");
-	capVideo.open("../Lecture14.mp4");
+	//capVideo.open("../Lecture14.mp4");
 	//capVideo.open("../MIT3_054S15_L15_300k.mp4");
 	//capVideo.open("../MIT6_006F11_lec02_300k.mp4");
+	//capVideo.open("../IndianGeography.mp4");
+	//capVideo.open("../The Lagrangian.mp4");
+	capVideo.open("../IC_ENGINE.mp4");
 
-	int nStartFrame = 50500;
+	int nStartFrame = 500;
+	//int nStartFrame = 50500;
+
 	capVideo.set(CV_CAP_PROP_POS_FRAMES, nStartFrame);
 	int frameCount = 2;
 	int nCurrFrameNum = nStartFrame;
@@ -235,7 +260,7 @@ int main(void) {
 		cv::absdiff(imgFrame1CopyLN, imgFrame1CopyLNShift, imgFrame1CopyLN);
 		cv::imshow("DiffImage", imgFrame1CopyLN);
 
-		cv::threshold(imgFrame1CopyLN, imgFrame1CopyLN, 30, 255.0, CV_THRESH_BINARY);
+		cv::threshold(imgFrame1CopyLN, imgFrame1CopyLN, 20, 255.0, CV_THRESH_BINARY);
 		
 		cv::imshow("ThresholdImage", imgFrame1CopyLN);
 
@@ -353,9 +378,13 @@ int main(void) {
 			<<" totalBlocks = " << nTotalBlocks << " totalNotMatchingBlocks = " 
 			<< nTotalNotMatchingBlock << "\n";
 
+		int nDiffOfNMBPercent = nTotalNotMatchingBlock - nTotalNotMatchingBlockPrev;
+		nDiffOfNMBPercent = (nDiffOfNMBPercent * 100) / nTotalBlocks;
+		int nTotalNMBPercent = (nTotalNotMatchingBlock * 100) / nTotalBlocks;
+		int nTotalNMBPrevPercent = (nTotalNotMatchingBlockPrev * 100) / nTotalBlocks;
 		//If 80% of total block doesn't matches && atmost 20% of previous total block doesn't match
-		if ((nTotalNotMatchingBlock * 10 > nTotalBlocks * 7) &&
-			(nTotalNotMatchingBlockPrev * 10 < nTotalBlocks * 3)) {
+		if (((nTotalNMBPercent > 70) && (nTotalNMBPrevPercent < 30)) ||
+			((nDiffOfNMBPercent > 50) && (nTotalNotMatchingBlockPrev < 20))) {
 			nPrevLNOutputBlockNum = nCurrLNOutputBlockNum;
 			nCurrLNOutputBlockNum = i - 1;
 			int nCurrFrameNum = (LNArrayOfBlockObj[0][0].arrayOfBlock[i - 1]).nFrameNum;
