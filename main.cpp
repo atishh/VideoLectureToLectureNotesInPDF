@@ -14,11 +14,21 @@
 
 #define SHOW_STEPS            // un-comment or comment this line to show steps or not
 
+//const globals.
 const int nPrint = 0;
 const int nPrintPostProcess = 0;
 const int nNoOfBlockRow = 10;
 const int nNoOfBlockCol = 10;
 const int nIgnoreNextFrames = 100;
+
+//other globals
+int frameWidth = 0;
+int frameHeight = 0;
+int totalFrames = 0;
+int fps = 0;
+int nNoOfPixelsOfBlockRow = 0;
+int nNoOfPixelsOfBlockCol = 0;
+LNArrayOfBlock LNArrayOfBlockObj[nNoOfBlockRow][nNoOfBlockCol];
 
 // global variables ///////////////////////////////////////////////////////////////////////////////
 const cv::Scalar SCALAR_BLACK = cv::Scalar(0.0, 0.0, 0.0);
@@ -61,6 +71,26 @@ inline cv::Mat translateImg(cv::Mat &img, cv::Mat &imgShift, int offsetx, int of
 	return trans_mat;
 }
 
+void drawDiagRectanges(cv::Mat& imgFrame1CopyLN, int nCurrentBlockTemp)
+{
+	for (int r = 0; r < nNoOfBlockRow; r++) {
+		for (int c = 0; c < nNoOfBlockCol; c++) {
+			int startPosY = r*nNoOfPixelsOfBlockRow;
+			int endPosY = (r + 1)*nNoOfPixelsOfBlockRow;
+			int startPosX = c*nNoOfPixelsOfBlockCol;
+			int endPosX = (c + 1)*nNoOfPixelsOfBlockCol;
+			cv::rectangle(imgFrame1CopyLN, cv::Point(startPosX, startPosY), cv::Point(endPosX, endPosY), cv::Scalar(110, 220, 0), 2, 8);
+			int intFontFace = CV_FONT_HERSHEY_SIMPLEX;
+		//	int nCurrentBlock = LNArrayOfBlockObj[r][c].nNoOfBlocks - 1;
+			int nCurrentBlock = nCurrentBlockTemp;
+			int noOfWhitePixels = (LNArrayOfBlockObj[r][c].arrayOfBlock[nCurrentBlock]).nNoOfPoints;
+			int textPointX = (startPosX + endPosX) / 2;
+			int textPointY = (startPosY + endPosY) / 2;
+			cv::putText(imgFrame1CopyLN, std::to_string(noOfWhitePixels), cv::Point(textPointX, textPointY), intFontFace, 1, cv::Scalar(110, 220, 0), 1);
+		}
+	}
+}
+
 LNFramesOfBlocks calculateFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoOfBlockCol]
 										, int nCurrLNOutputBlockNum 
 										, int nPrevLNOutputBlockNum)
@@ -72,6 +102,9 @@ LNFramesOfBlocks calculateFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoO
 	LNFramesOfBlocksObj.nFrameNumOfBlock = ary;
 	LNFramesOfBlocksObj.nPrevFrameNum = 
 		(LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNOutputBlockNum-1]).nFrameNum;
+	LNFramesOfBlocksObj.nCurrBlockNum = nCurrLNOutputBlockNum;
+	LNFramesOfBlocksObj.nCurrFrameNum =
+		(LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNOutputBlockNum]).nFrameNum;
 	std::cout << " Final Frame no "
 		<< (LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNOutputBlockNum]).nFrameNum
 		<< "\n";
@@ -156,15 +189,15 @@ int main(void) {
 	std::vector<Blob> blobs;
 
 	//capVideo.open("../mod03lec10.mp4");
-	//capVideo.open("../Lecture14.mp4");
+	capVideo.open("../Lecture14.mp4");
 	//capVideo.open("../MIT3_054S15_L15_300k.mp4");
 	//capVideo.open("../MIT6_006F11_lec02_300k.mp4");
 	//capVideo.open("../IndianGeography.mp4");
 	//capVideo.open("../The Lagrangian.mp4");
-	capVideo.open("../IC_ENGINE.mp4");
+	//capVideo.open("../IC_ENGINE.mp4");
 
-	int nStartFrame = 500;
-	//int nStartFrame = 50500;
+	//int nStartFrame = 500;
+	int nStartFrame = 50500;
 
 	capVideo.set(CV_CAP_PROP_POS_FRAMES, nStartFrame);
 	int frameCount = 2;
@@ -182,20 +215,19 @@ int main(void) {
 		return(0);
 	}
 
-	int frameWidth = capVideo.get(CV_CAP_PROP_FRAME_WIDTH);
-	int frameHeight = capVideo.get(CV_CAP_PROP_FRAME_HEIGHT);
-	int totalFrames = capVideo.get(CV_CAP_PROP_FRAME_COUNT);
-	int fps = capVideo.get(CV_CAP_PROP_FPS);
-
-	int nNoOfPixelsOfBlockRow = frameHeight / nNoOfBlockRow;
-	int nNoOfPixelsOfBlockCol = frameWidth / nNoOfBlockCol;
+	frameWidth = capVideo.get(CV_CAP_PROP_FRAME_WIDTH);
+	frameHeight = capVideo.get(CV_CAP_PROP_FRAME_HEIGHT);
+	totalFrames = capVideo.get(CV_CAP_PROP_FRAME_COUNT);
+	fps = capVideo.get(CV_CAP_PROP_FPS);
+	nNoOfPixelsOfBlockRow = frameHeight / nNoOfBlockRow;
+	nNoOfPixelsOfBlockCol = frameWidth / nNoOfBlockCol;
 
 	std::cout << "frame width = " << frameWidth << " frame height = " << frameHeight << "\n";
 	std::cout << "total frames = " << totalFrames << " fps = " << fps << "\n";
 	std::cout << "nNoOfPixelsOfBlockRow = " << nNoOfPixelsOfBlockRow << "\n";
 	std::cout << "nNoOfPixelsOfBlockCol = " << nNoOfPixelsOfBlockCol << "\n";
 
-	LNArrayOfBlock LNArrayOfBlockObj[nNoOfBlockRow][nNoOfBlockCol];
+
 	for (int r = 0; r < nNoOfBlockRow; r++) {
 		for (int c = 0; c < nNoOfBlockCol; c++) {
 			LNArrayOfBlockObj[r][c].nStartRow = r*nNoOfPixelsOfBlockRow;
@@ -272,23 +304,7 @@ int main(void) {
 		}
 
 		//Draw rectangles for diagnostics.
-		for (int r = 0; r < nNoOfBlockRow; r++) {
-			for (int c = 0; c < nNoOfBlockCol; c++) {
-				int startPosY = r*nNoOfPixelsOfBlockRow;
-				int endPosY = (r+1)*nNoOfPixelsOfBlockRow;
-				int startPosX = c*nNoOfPixelsOfBlockCol;
-				int endPosX = (c+1)*nNoOfPixelsOfBlockCol;
-				cv::rectangle(imgFrame1CopyLN, cv::Point(startPosX, startPosY), cv::Point(endPosX, endPosY), cv::Scalar(110, 220, 0), 2, 8);
-				int intFontFace = CV_FONT_HERSHEY_SIMPLEX;
-				int nCurrentBlock = LNArrayOfBlockObj[r][c].nNoOfBlocks - 1;
-				int noOfWhitePixels = (LNArrayOfBlockObj[r][c].arrayOfBlock[nCurrentBlock]).nNoOfPoints;
-				int textPointX = (startPosX + endPosX) / 2;
-				int textPointY = (startPosY + endPosY) / 2;
-				cv::putText(imgFrame1CopyLN, std::to_string(noOfWhitePixels), cv::Point(textPointX, textPointY), intFontFace, 1, cv::Scalar(128, 128, 128), 1);
-			
-			}
-		}
-		
+		drawDiagRectanges(imgFrame1CopyLN, LNArrayOfBlockObj[0][0].nNoOfBlocks - 1);
 		cv::imshow("ImageWithLines", imgFrame1CopyLN);
 
 		//cv::waitKey(0);                 // uncomment this line to go frame by frame for debugging
@@ -396,7 +412,7 @@ int main(void) {
 		cv::Mat imgFrame1;
 		displayFramesOfBlocks(capVideo, LNFramesOfBlocksObj, nLNOutputFrameNum, 
 			arrayOfPossibleLNFrame, LNArrayOfBlockObj, imgFrame1);
-
+		drawDiagRectanges(imgFrame1, LNFramesOfBlocksObj.nCurrBlockNum);
 		std::string finalImageStr = "FinalImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
 		std::string finalImageStr1 = "../tmp/" + finalImageStr + ".jpg";
 		cv::imshow(finalImageStr1, imgFrame1);

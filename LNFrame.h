@@ -11,6 +11,7 @@ public:
 	int** nFrameNumOfBlock;
 	int nCurrFrameNum;
 	int nPrevFrameNum;
+	int nCurrBlockNum;
 };
 
 #endif    // _H_LNFRAME_
