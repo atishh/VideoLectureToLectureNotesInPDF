@@ -1,41 +1,8 @@
-// ObjectTrackingCPP.cpp
+// main.cpp
 
-#include<opencv2/core/core.hpp>
-#include<opencv2/highgui/highgui.hpp>
-#include<opencv2/imgproc/imgproc.hpp>
-
-#include<iostream>
-#include<conio.h>           // it may be necessary to change or remove this line if not using Windows
-
-#include "Blob.h"
-#include "LNArrayOfBlock.h"
-#include "LNFrame.h"
-#include "Magick++.h"
+#include "init.h"
 
 #define SHOW_STEPS            // un-comment or comment this line to show steps or not
-
-//const globals.
-const int nPrint = 0;
-const int nPrintPostProcess = 0;
-const int nNoOfBlockRow = 10;
-const int nNoOfBlockCol = 10;
-const int nIgnoreNextFrames = 100;
-
-//other globals
-int frameWidth = 0;
-int frameHeight = 0;
-int totalFrames = 0;
-int fps = 0;
-int nNoOfPixelsOfBlockRow = 0;
-int nNoOfPixelsOfBlockCol = 0;
-LNArrayOfBlock LNArrayOfBlockObj[nNoOfBlockRow][nNoOfBlockCol];
-
-// global variables ///////////////////////////////////////////////////////////////////////////////
-const cv::Scalar SCALAR_BLACK = cv::Scalar(0.0, 0.0, 0.0);
-const cv::Scalar SCALAR_WHITE = cv::Scalar(255.0, 255.0, 255.0);
-const cv::Scalar SCALAR_YELLOW = cv::Scalar(0.0, 255.0, 255.0);
-const cv::Scalar SCALAR_GREEN = cv::Scalar(0.0, 200.0, 0.0);
-const cv::Scalar SCALAR_RED = cv::Scalar(0.0, 0.0, 255.0);
 
 // function prototypes ////////////////////////////////////////////////////////////////////////////
 void matchCurrentFrameBlobsToExistingBlobs(std::vector<Blob> &existingBlobs, std::vector<Blob> &currentFrameBlobs);
@@ -181,8 +148,6 @@ void displayFramesOfBlocks(cv::VideoCapture &capVideo, LNFramesOfBlocks LNFrames
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int main(void) {
 
-	cv::VideoCapture capVideo;
-
 	cv::Mat imgFrame1;
 	cv::Mat imgFrame2;
 
@@ -203,40 +168,7 @@ int main(void) {
 	int frameCount = 2;
 	int nCurrFrameNum = nStartFrame;
 
-	if (!capVideo.isOpened()) {                                                 // if unable to open video file
-		std::cout << "error reading video file" << std::endl << std::endl;      // show error message
-		_getch();                    // it may be necessary to change or remove this line if not using Windows
-		return(0);                                                              // and exit program
-	}
-
-	if (capVideo.get(CV_CAP_PROP_FRAME_COUNT) < 2) {
-		std::cout << "error: video file must have at least two frames";
-		_getch();
-		return(0);
-	}
-
-	frameWidth = capVideo.get(CV_CAP_PROP_FRAME_WIDTH);
-	frameHeight = capVideo.get(CV_CAP_PROP_FRAME_HEIGHT);
-	totalFrames = capVideo.get(CV_CAP_PROP_FRAME_COUNT);
-	fps = capVideo.get(CV_CAP_PROP_FPS);
-	nNoOfPixelsOfBlockRow = frameHeight / nNoOfBlockRow;
-	nNoOfPixelsOfBlockCol = frameWidth / nNoOfBlockCol;
-
-	std::cout << "frame width = " << frameWidth << " frame height = " << frameHeight << "\n";
-	std::cout << "total frames = " << totalFrames << " fps = " << fps << "\n";
-	std::cout << "nNoOfPixelsOfBlockRow = " << nNoOfPixelsOfBlockRow << "\n";
-	std::cout << "nNoOfPixelsOfBlockCol = " << nNoOfPixelsOfBlockCol << "\n";
-
-
-	for (int r = 0; r < nNoOfBlockRow; r++) {
-		for (int c = 0; c < nNoOfBlockCol; c++) {
-			LNArrayOfBlockObj[r][c].nStartRow = r*nNoOfPixelsOfBlockRow;
-			LNArrayOfBlockObj[r][c].nStartCol = c*nNoOfPixelsOfBlockCol;
-			LNArrayOfBlockObj[r][c].nFinalRow = (r+1)*nNoOfPixelsOfBlockRow;
-			LNArrayOfBlockObj[r][c].nFinalCol = (c+1)*nNoOfPixelsOfBlockCol;
-			LNArrayOfBlockObj[r][c].nNoOfBlocks = 0;
-		}
-	}
+	initialize();
 
 	capVideo.read(imgFrame1);
 	capVideo.read(imgFrame2);
@@ -244,9 +176,6 @@ int main(void) {
 	char chCheckForEscKey = 0;
 
 	bool blnFirstFrame = true;
-
-
-
 
 	while (capVideo.isOpened() && chCheckForEscKey != 27) {
 
