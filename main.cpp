@@ -190,15 +190,17 @@ int main(void) {
 
 		cv::imshow("GrayImage", imgFrame1CopyLN);
 
-		cv::Mat imgFrame1CopyLNShift = cv::Mat::zeros(imgFrame1CopyLN.rows, imgFrame1CopyLN.cols, imgFrame1CopyLN.type());
-		translateImg(imgFrame1CopyLN, imgFrame1CopyLNShift, -1, 0);
-
-		cv::Mat imgFrame1CopyLNOrig = imgFrame1CopyLN.clone();
-		cv::GaussianBlur(imgFrame1CopyLNOrig, imgFrame1CopyLNOrig, cv::Size(5, 5), 0);
-		cv::GaussianBlur(imgFrame1CopyLNOrig, imgFrame1CopyLNOrig, cv::Size(5, 5), 0);
-		cv::imshow("GausiaanBlur", imgFrame1CopyLNOrig);
-
-		cv::absdiff(imgFrame1CopyLN, imgFrame1CopyLNShift, imgFrame1CopyLN);
+		if (bEnableShiftAndDiff) {
+			cv::Mat imgFrame1CopyLNShift = cv::Mat::zeros(imgFrame1CopyLN.rows, imgFrame1CopyLN.cols, imgFrame1CopyLN.type());
+			translateImg(imgFrame1CopyLN, imgFrame1CopyLNShift, -1, 0);
+			cv::absdiff(imgFrame1CopyLN, imgFrame1CopyLNShift, imgFrame1CopyLN);
+		}
+		else {
+			cv::Mat imgFrame1CopyLNOrig = imgFrame1CopyLN.clone();
+			cv::GaussianBlur(imgFrame1CopyLNOrig, imgFrame1CopyLNOrig, cv::Size(5, 5), 0);
+			cv::imshow("GausiaanBlur", imgFrame1CopyLNOrig);
+			cv::absdiff(imgFrame1CopyLN, imgFrame1CopyLNOrig, imgFrame1CopyLN);
+		}
 		cv::imshow("DiffImage", imgFrame1CopyLN);
 
 		cv::threshold(imgFrame1CopyLN, imgFrame1CopyLN, 20, 255.0, CV_THRESH_BINARY);

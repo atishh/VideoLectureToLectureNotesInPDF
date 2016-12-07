@@ -20,6 +20,7 @@ const int nPrintPostProcess = 0;
 const int nNoOfBlockRow = 10;
 const int nNoOfBlockCol = 10;
 const int nIgnoreNextFrames = 100;
+const bool bEnableShiftAndDiff = 0;
 const cv::Scalar SCALAR_BLACK = cv::Scalar(0.0, 0.0, 0.0);
 const cv::Scalar SCALAR_WHITE = cv::Scalar(255.0, 255.0, 255.0);
 const cv::Scalar SCALAR_YELLOW = cv::Scalar(0.0, 255.0, 255.0);
@@ -35,7 +36,6 @@ extern int fps;
 extern int nNoOfPixelsOfBlockRow;
 extern int nNoOfPixelsOfBlockCol;
 extern LNArrayOfBlock LNArrayOfBlockObj[nNoOfBlockRow][nNoOfBlockCol];
-
 
 //functions declarations.
 extern void initialize();
