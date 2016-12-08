@@ -77,14 +77,19 @@ void findLNOutputFrames(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 	int nTotalNMBPrev = 0;
 	int nCurrLNFrameIndex = 0;
 	int nPrevLNFrameIndex = 0;
+	int nTotalBWithThresh = 0; //Total blocks having some threshold
 
 	for (int i = 1; i < nNoOfFramesProcessed; i++) {
 		nTotalNMBPrev = nTotalNMB;
 		nTotalNMB = 0;
+		nTotalBWithThresh = 0;
 		for (int r = 0; r < nNoOfBlockRow; r++) {
 			for (int c = 0; c < nNoOfBlockCol; c++) {
 				if (isBlockDifferentFromPrevBlock(i, r, c)) {
 					nTotalNMB++;
+				}
+				if ((LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfPoints > 50) {
+					nTotalBWithThresh++;
 				}
 			}
 		}
@@ -110,7 +115,8 @@ void findLNOutputFrames(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 		}
 	}
 	//Check if Last Frame is correct, then add it.
-	if ((nTotalNMB * 10 < nTotalBlocks * 3)) {
+	if ((nTotalNMB * 10 < nTotalBlocks * 3) &&
+		(nTotalBWithThresh * 10 > nTotalBlocks)) {
 		nPrevLNFrameIndex = nCurrLNFrameIndex;
 		nCurrLNFrameIndex = nNoOfFramesProcessed - 1;
 		int nCurrFrameNum = (LNArrayOfBlockObj[0][0].arrayOfBlock[nNoOfFramesProcessed - 1]).nFrameNum;
