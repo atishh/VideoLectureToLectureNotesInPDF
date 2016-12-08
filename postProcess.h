@@ -13,7 +13,7 @@
 extern void printWhitePixelsForDiag();
 extern bool isBlockDifferentFromPrevBlock(int nFrame, int r, int c);
 extern LNFramesOfBlocks matchingFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoOfBlockCol]
-	, int nCurrLNOutputBlockNum
-	, int nPrevLNOutputBlockNum);
+	, int nCurrLNFrameIndex
+	, int nPrevLNFrameIndex);
 
 #endif    // _H_LNPOSTPROCESS_

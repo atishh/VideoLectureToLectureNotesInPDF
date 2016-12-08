@@ -141,51 +141,50 @@ int main(void) {
 
 	//Find possible LN output Frames
 	int nTotalBlocks = nNoOfBlockRow*nNoOfBlockCol;
-	int nTotalNotMatchingBlock  = 0;
-	int nTotalNotMatchingBlockPrev = 0;
-	int nCurrLNOutputBlockNum = 0;
-	int nPrevLNOutputBlockNum = 0;
+	int nTotalNMB  = 0; //NMB = Not Matching Block
+	int nTotalNMBPrev = 0;
+	int nCurrLNFrameIndex = 0;
+	int nPrevLNFrameIndex = 0;
 
 	for (int i = 1; i < nNoOfFramesProcessed; i++) {
-		nTotalNotMatchingBlockPrev = nTotalNotMatchingBlock;
-		nTotalNotMatchingBlock = 0;
+		nTotalNMBPrev = nTotalNMB;
+		nTotalNMB = 0;
 		for (int r = 0; r < nNoOfBlockRow; r++) {
 			for (int c = 0; c < nNoOfBlockCol; c++) {
 				if (isBlockDifferentFromPrevBlock(i, r, c)) {
-					nTotalNotMatchingBlock++;
+					nTotalNMB++;
 				}
 			}
 		}
 		 
 		std::cout << "Frame = " << (LNArrayOfBlockObj[0][0].arrayOfBlock[i - 1]).nFrameNum  
 			<<" totalBlocks = " << nTotalBlocks << " totalNotMatchingBlocks = " 
-			<< nTotalNotMatchingBlock << "\n";
+			<< nTotalNMB << "\n";
 
-		int nDiffOfNMBPercent = nTotalNotMatchingBlock - nTotalNotMatchingBlockPrev;
+		int nDiffOfNMBPercent = nTotalNMB - nTotalNMBPrev;
 		nDiffOfNMBPercent = (nDiffOfNMBPercent * 100) / nTotalBlocks;
-		int nTotalNMBPercent = (nTotalNotMatchingBlock * 100) / nTotalBlocks;
-		int nTotalNMBPrevPercent = (nTotalNotMatchingBlockPrev * 100) / nTotalBlocks;
+		int nTotalNMBPercent = (nTotalNMB * 100) / nTotalBlocks;
+		int nTotalNMBPrevPercent = (nTotalNMBPrev * 100) / nTotalBlocks;
 		//If 80% of total block doesn't matches && atmost 20% of previous total block doesn't match
 		if (((nTotalNMBPercent > 70) && (nTotalNMBPrevPercent < 30)) ||
-			((nDiffOfNMBPercent > 50) && (nTotalNotMatchingBlockPrev < 20))) {
-			nPrevLNOutputBlockNum = nCurrLNOutputBlockNum;
-			nCurrLNOutputBlockNum = i - 1;
+			((nDiffOfNMBPercent > 50) && (nTotalNMBPrev < 20))) {
+			nPrevLNFrameIndex = nCurrLNFrameIndex;
+			nCurrLNFrameIndex = i - 1;
 			int nCurrFrameNum = (LNArrayOfBlockObj[0][0].arrayOfBlock[i - 1]).nFrameNum;
 			LNFramesOfBlocks LNFramesOfBlocksObj;
-			LNFramesOfBlocksObj.nCurrFrameNum = nCurrFrameNum;
-			LNFramesOfBlocksObj = matchingFramesOfBlocks(LNArrayOfBlockObj, nCurrLNOutputBlockNum,
-				nPrevLNOutputBlockNum);
+			LNFramesOfBlocksObj = matchingFramesOfBlocks(LNArrayOfBlockObj, nCurrLNFrameIndex,
+				nPrevLNFrameIndex);
 			arrayOfFramesOfBlocks.push_back(LNFramesOfBlocksObj);
 		}
 	}
 	//Check if Last Frame is correct, then add it.
-	if ((nTotalNotMatchingBlock * 10 < nTotalBlocks * 3)) {
-		nPrevLNOutputBlockNum = nCurrLNOutputBlockNum;
-		nCurrLNOutputBlockNum = nNoOfFramesProcessed - 1;
+	if ((nTotalNMB * 10 < nTotalBlocks * 3)) {
+		nPrevLNFrameIndex = nCurrLNFrameIndex;
+		nCurrLNFrameIndex = nNoOfFramesProcessed - 1;
 		int nCurrFrameNum = (LNArrayOfBlockObj[0][0].arrayOfBlock[nNoOfFramesProcessed - 1]).nFrameNum;
 		LNFramesOfBlocks LNFramesOfBlocksObj;
-		LNFramesOfBlocksObj = matchingFramesOfBlocks(LNArrayOfBlockObj, nCurrLNOutputBlockNum,
-			nPrevLNOutputBlockNum);
+		LNFramesOfBlocksObj = matchingFramesOfBlocks(LNArrayOfBlockObj, nCurrLNFrameIndex,
+			nPrevLNFrameIndex);
 		arrayOfFramesOfBlocks.push_back(LNFramesOfBlocksObj);
 	}
 

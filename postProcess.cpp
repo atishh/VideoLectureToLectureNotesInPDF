@@ -29,8 +29,8 @@ bool isBlockDifferentFromPrevBlock(int nFrame, int r, int c)
 }
 
 LNFramesOfBlocks matchingFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoOfBlockCol]
-	, int nCurrLNOutputBlockNum
-	, int nPrevLNOutputBlockNum)
+	, int nCurrLNFrameIndex
+	, int nPrevLNFrameIndex)
 {
 	LNFramesOfBlocks LNFramesOfBlocksObj;
 	int** ary = new int*[nNoOfBlockRow];
@@ -38,19 +38,19 @@ LNFramesOfBlocks matchingFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoOf
 		ary[i] = new int[nNoOfBlockCol];
 	LNFramesOfBlocksObj.nFrameNumOfBlock = ary;
 	LNFramesOfBlocksObj.nPrevFrameNum =
-		(LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNOutputBlockNum - 1]).nFrameNum;
-	LNFramesOfBlocksObj.nCurrBlockNum = nCurrLNOutputBlockNum;
+		(LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNFrameIndex - 1]).nFrameNum;
+	LNFramesOfBlocksObj.nCurrBlockNum = nCurrLNFrameIndex;
 	LNFramesOfBlocksObj.nCurrFrameNum =
-		(LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNOutputBlockNum]).nFrameNum;
+		(LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNFrameIndex]).nFrameNum;
 	std::cout << " Final Frame no "
-		<< (LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNOutputBlockNum]).nFrameNum
+		<< (LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNFrameIndex]).nFrameNum
 		<< "\n";
 	for (int r = 0; r < nNoOfBlockRow; r++) {
 		for (int c = 0; c < nNoOfBlockCol; c++) {
-			int nCorrectFrameNo = (LNArrayOfBlockObj[r][c].arrayOfBlock[nCurrLNOutputBlockNum]).nFrameNum;
+			int nCorrectFrameNo = (LNArrayOfBlockObj[r][c].arrayOfBlock[nCurrLNFrameIndex]).nFrameNum;
 			int bFound = 0;
 			//Iterate backward till matching frame of block is found
-			for (int i = nCurrLNOutputBlockNum; i >(nPrevLNOutputBlockNum + 1); i--) {
+			for (int i = nCurrLNFrameIndex; i >(nPrevLNFrameIndex + 1); i--) {
 				int nCurrNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfPoints;
 				int nPrevNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i - 1]).nNoOfPoints;
 				int diff = abs(nCurrNoOfPoints - nPrevNoOfPoints);
