@@ -1,16 +1,9 @@
 // main.cpp
 
 #include "init.h"
+#include "engine.h"
 
 #define SHOW_STEPS            // un-comment or comment this line to show steps or not
-
-
-inline cv::Mat translateImg(cv::Mat &img, cv::Mat &imgShift, int offsetx, int offsety)
-{
-    cv::Mat trans_mat = (cv::Mat_<double>(2,3) << 1, 0, offsetx, 0, 1, offsety);
-    warpAffine(img,imgShift,trans_mat,img.size());
-	return trans_mat;
-}
 
 void drawDiagRectanges(cv::Mat& imgFrame1CopyLN, int nCurrentBlockTemp)
 {
@@ -127,8 +120,6 @@ int main(void) {
 	cv::Mat imgFrame1;
 	cv::Mat imgFrame2;
 
-	std::vector<Blob> blobs;
-
 	//capVideo.open("../mod03lec10.mp4");
 	capVideo.open("../Lecture14.mp4");
 	//capVideo.open("../MIT3_054S15_L15_300k.mp4");
@@ -159,57 +150,20 @@ int main(void) {
 
 		cv::Mat imgFrame1CopyLN = imgFrame1.clone();
 
-		cv::Mat imgDifference;
-		cv::Mat imgThresh;
-
 		cv::cvtColor(imgFrame1CopyLN, imgFrame1CopyLN, CV_BGR2GRAY);
 
 		cv::imshow("GrayImage", imgFrame1CopyLN);
 
-		if (bEnableShiftAndDiff) {
-			cv::Mat imgFrame1CopyLNShift = cv::Mat::zeros(imgFrame1CopyLN.rows, imgFrame1CopyLN.cols, imgFrame1CopyLN.type());
-			translateImg(imgFrame1CopyLN, imgFrame1CopyLNShift, -1, 0);
-			cv::absdiff(imgFrame1CopyLN, imgFrame1CopyLNShift, imgFrame1CopyLN);
-		}
-		else {
-			cv::Mat imgFrame1CopyLNOrig = imgFrame1CopyLN.clone();
-			cv::GaussianBlur(imgFrame1CopyLNOrig, imgFrame1CopyLNOrig, cv::Size(5, 5), 0);
-			cv::imshow("GausiaanBlur", imgFrame1CopyLNOrig);
-			cv::absdiff(imgFrame1CopyLN, imgFrame1CopyLNOrig, imgFrame1CopyLN);
-		}
+		shiftAndDiff(imgFrame1CopyLN);
+
 		cv::imshow("DiffImage", imgFrame1CopyLN);
 
 		cv::threshold(imgFrame1CopyLN, imgFrame1CopyLN, 20, 255.0, CV_THRESH_BINARY);
 		
 		cv::imshow("ThresholdImage", imgFrame1CopyLN);
 
-
 		//Populate Array of Block with Block of current frame. 
-		for (int r = 0; r < nNoOfBlockRow; r++) {
-			for (int c = 0; c < nNoOfBlockCol; c++) {
-
-				LNBlock LNBlockObj;
-				LNBlockObj.nFrameNum = nCurrFrameNum;
-				LNBlockObj.nNoOfPoints = 0;
-				for (int i = r*nNoOfPixelsOfBlockRow; i < (r + 1)*nNoOfPixelsOfBlockRow; i++) {
-					for (int j = c*nNoOfPixelsOfBlockCol; j < (c + 1)*nNoOfPixelsOfBlockCol; j++) {
-						cv::Scalar intensity2 = imgFrame1CopyLN.at<uchar>(i, j);
-						int intensity = intensity2.val[0];
-						if (intensity == 255) {
-							cv::Point pt;
-							pt.y = i;
-							pt.x = j;
-							(LNBlockObj.whitePixels).push_back(pt);
-							(LNBlockObj.nNoOfPoints)++;
-						}
-					}
-				}
-				if (nPrint) std::cout << "LNBlockObj[" << r << "][" << c << "] = " << LNBlockObj.nNoOfPoints << "\n";
-				(LNArrayOfBlockObj[r][c].arrayOfBlock).push_back(LNBlockObj);
-				(LNArrayOfBlockObj[r][c].nNoOfBlocks)++;
-
-			}
-		}
+		createBlocksOfFrame(imgFrame1CopyLN, nCurrFrameNum);
 
 		//Draw rectangles for diagnostics.
 		drawDiagRectanges(imgFrame1CopyLN, LNArrayOfBlockObj[0][0].nNoOfBlocks - 1);

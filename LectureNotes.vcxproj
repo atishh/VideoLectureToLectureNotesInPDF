@@ -121,12 +121,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Blob.cpp" />
+    <ClCompile Include="engine.cpp" />
     <ClCompile Include="init.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Blob.h" />
+    <ClInclude Include="engine.h" />
     <ClInclude Include="init.h" />
     <ClInclude Include="LNArrayOfBlock.h" />
     <ClInclude Include="LNBlock.h" />

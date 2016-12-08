@@ -9,7 +9,6 @@
 #include<iostream>
 #include<conio.h>           // it may be necessary to change or remove this line if not using Windows
 
-#include "Blob.h"
 #include "LNArrayOfBlock.h"
 #include "LNFrame.h"
 #include "Magick++.h"
