@@ -122,12 +122,13 @@ void findLNOutputFrames(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 }
 
 
-static void displayFramesOfBlocks(cv::VideoCapture &capVideo, LNFramesOfBlocks LNFramesOfBlocksObj,
-	int nLNOutputFrameNum, std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks,
-	LNArrayOfBlock LNArrayOfBlockObj[][nNoOfBlockCol], cv::Mat& imgFrame1)
+static void displayFramesOfBlocks(LNFramesOfBlocks LNFramesOfBlocksObj,
+	std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks,
+	cv::Mat& imgFrame1)
 {
-	cv::Mat imgFrame2;
+	int nLNOutputFrameNum = LNFramesOfBlocksObj.nCurrFrameNum;
 	int nPrevFrameNum = LNFramesOfBlocksObj.nPrevFrameNum;
+	cv::Mat imgFrame2;
 	capVideo.set(CV_CAP_PROP_POS_FRAMES, nPrevFrameNum);
 	capVideo.read(imgFrame1);
 	std::string finalImageStr = "PreviousImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
@@ -178,8 +179,8 @@ void writeFramesToPdf(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 		LNFramesOfBlocksObj = arrayOfFramesOfBlocks[i];
 		int nLNOutputFrameNum = LNFramesOfBlocksObj.nCurrFrameNum;
 		cv::Mat imgFrame1;
-		displayFramesOfBlocks(capVideo, LNFramesOfBlocksObj, nLNOutputFrameNum,
-			arrayOfFramesOfBlocks, LNArrayOfBlockObj, imgFrame1);
+		displayFramesOfBlocks(LNFramesOfBlocksObj,
+			arrayOfFramesOfBlocks, imgFrame1);
 		drawDiagRectanges(imgFrame1, LNFramesOfBlocksObj.nCurrBlockNum);
 		std::string finalImageStr = "FinalImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
 		std::string finalImageStr1 = "../tmp/" + finalImageStr + ".jpg";
