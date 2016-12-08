@@ -4,32 +4,6 @@
 
 #define SHOW_STEPS            // un-comment or comment this line to show steps or not
 
-// function prototypes ////////////////////////////////////////////////////////////////////////////
-void matchCurrentFrameBlobsToExistingBlobs(std::vector<Blob> &existingBlobs, std::vector<Blob> &currentFrameBlobs);
-void addBlobToExistingBlobs(Blob &currentFrameBlob, std::vector<Blob> &existingBlobs, int &intIndex);
-void addNewBlob(Blob &currentFrameBlob, std::vector<Blob> &existingBlobs);
-double distanceBetweenPoints(cv::Point point1, cv::Point point2);
-void drawAndShowContours(cv::Size imageSize, std::vector<std::vector<cv::Point> > contours, std::string strImageName);
-void drawAndShowContours(cv::Size imageSize, std::vector<Blob> blobs, std::string strImageName);
-void drawBlobInfoOnImage(std::vector<Blob> &blobs, cv::Mat &imgFrame2Copy);
-
-bool IsIntensityDiffFromSurrounding(cv::Mat &imgLN, int r, int c)
-{
-	cv::Scalar intensity1 = imgLN.at<uchar>(r, c);
-	int intensity = intensity1.val[0];
-	int nNoOfIntensityDiff = 0;
-	for (int i = r - 1; i < r + 2; i++) {
-		for (int j = c - 1; j < c + 2; j++) {
-			cv::Scalar intensity2 = imgLN.at<uchar>(i, j);
-			if (intensity - intensity2.val[0] > 20) {
-				nNoOfIntensityDiff++;
-			}
-		}
-	}
-	if (nNoOfIntensityDiff >= 4)
-		return true;
-	return false;
-}
 
 inline cv::Mat translateImg(cv::Mat &img, cv::Mat &imgShift, int offsetx, int offsety)
 {
@@ -78,6 +52,7 @@ LNFramesOfBlocks calculateFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoO
 	for (int r = 0; r < nNoOfBlockRow; r++) {
 		for (int c = 0; c < nNoOfBlockCol; c++) {
 			int nCorrectFrameNo = (LNArrayOfBlockObj[r][c].arrayOfBlock[nCurrLNOutputBlockNum]).nFrameNum;
+			int bFound = 0;
 			//Iterate backward till matching frame of block is found
 			for (int i = nCurrLNOutputBlockNum; i > (nPrevLNOutputBlockNum + 1); i--) {
 				int nCurrNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfPoints;
@@ -86,11 +61,12 @@ LNFramesOfBlocks calculateFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoO
 				if (((nCurrNoOfPoints > 20) && (diff <= (nCurrNoOfPoints / 7))) ||
 					((nCurrNoOfPoints <= 20) && (diff < 10)))  {
 					nCorrectFrameNo = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nFrameNum;
+					bFound = 1;
 					break;
 				}
 			}
 			ary[r][c] = nCorrectFrameNo;
-			std::cout << nCorrectFrameNo << " ";
+			std::cout << nCorrectFrameNo << "," << bFound << " ";
 		}
 		std::cout << "\n";
 	}
@@ -206,6 +182,7 @@ int main(void) {
 		cv::threshold(imgFrame1CopyLN, imgFrame1CopyLN, 20, 255.0, CV_THRESH_BINARY);
 		
 		cv::imshow("ThresholdImage", imgFrame1CopyLN);
+
 
 		//Populate Array of Block with Block of current frame. 
 		for (int r = 0; r < nNoOfBlockRow; r++) {
@@ -366,136 +343,4 @@ int main(void) {
 
 	return(0);
 }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-void matchCurrentFrameBlobsToExistingBlobs(std::vector<Blob> &existingBlobs, std::vector<Blob> &currentFrameBlobs) {
-
-	for (auto &existingBlob : existingBlobs) {
-
-		existingBlob.blnCurrentMatchFoundOrNewBlob = false;
-
-		existingBlob.predictNextPosition();
-	}
-
-	for (auto &currentFrameBlob : currentFrameBlobs) {
-
-		int intIndexOfLeastDistance = 0;
-		double dblLeastDistance = 100000.0;
-
-		for (unsigned int i = 0; i < existingBlobs.size(); i++) {
-			if (existingBlobs[i].blnStillBeingTracked == true) {
-				double dblDistance = distanceBetweenPoints(currentFrameBlob.centerPositions.back(), existingBlobs[i].predictedNextPosition);
-
-				if (dblDistance < dblLeastDistance) {
-					dblLeastDistance = dblDistance;
-					intIndexOfLeastDistance = i;
-				}
-			}
-		}
-
-		if (dblLeastDistance < currentFrameBlob.dblCurrentDiagonalSize * 1.15) {
-			addBlobToExistingBlobs(currentFrameBlob, existingBlobs, intIndexOfLeastDistance);
-		}
-		else {
-			addNewBlob(currentFrameBlob, existingBlobs);
-		}
-
-	}
-
-	for (auto &existingBlob : existingBlobs) {
-
-		if (existingBlob.blnCurrentMatchFoundOrNewBlob == false) {
-			existingBlob.intNumOfConsecutiveFramesWithoutAMatch++;
-		}
-
-		if (existingBlob.intNumOfConsecutiveFramesWithoutAMatch >= 5) {
-			existingBlob.blnStillBeingTracked = false;
-		}
-
-	}
-
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-void addBlobToExistingBlobs(Blob &currentFrameBlob, std::vector<Blob> &existingBlobs, int &intIndex) {
-
-	existingBlobs[intIndex].currentContour = currentFrameBlob.currentContour;
-	existingBlobs[intIndex].currentBoundingRect = currentFrameBlob.currentBoundingRect;
-
-	existingBlobs[intIndex].centerPositions.push_back(currentFrameBlob.centerPositions.back());
-
-	existingBlobs[intIndex].dblCurrentDiagonalSize = currentFrameBlob.dblCurrentDiagonalSize;
-	existingBlobs[intIndex].dblCurrentAspectRatio = currentFrameBlob.dblCurrentAspectRatio;
-
-	existingBlobs[intIndex].blnStillBeingTracked = true;
-	existingBlobs[intIndex].blnCurrentMatchFoundOrNewBlob = true;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-void addNewBlob(Blob &currentFrameBlob, std::vector<Blob> &existingBlobs) {
-
-	currentFrameBlob.blnCurrentMatchFoundOrNewBlob = true;
-
-	existingBlobs.push_back(currentFrameBlob);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-double distanceBetweenPoints(cv::Point point1, cv::Point point2) {
-
-	int intX = abs(point1.x - point2.x);
-	int intY = abs(point1.y - point2.y);
-
-	return(sqrt(pow(intX, 2) + pow(intY, 2)));
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-void drawAndShowContours(cv::Size imageSize, std::vector<std::vector<cv::Point> > contours, std::string strImageName) {
-	cv::Mat image(imageSize, CV_8UC3, SCALAR_BLACK);
-
-	cv::drawContours(image, contours, -1, SCALAR_WHITE, -1);
-
-	cv::imshow(strImageName, image);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-void drawAndShowContours(cv::Size imageSize, std::vector<Blob> blobs, std::string strImageName) {
-
-	cv::Mat image(imageSize, CV_8UC3, SCALAR_BLACK);
-
-	std::vector<std::vector<cv::Point> > contours;
-
-	for (auto &blob : blobs) {
-		if (blob.blnStillBeingTracked == true) {
-			contours.push_back(blob.currentContour);
-		}
-	}
-
-	cv::drawContours(image, contours, -1, SCALAR_WHITE, -1);
-
-	cv::imshow(strImageName, image);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-void drawBlobInfoOnImage(std::vector<Blob> &blobs, cv::Mat &imgFrame2Copy) {
-
-	for (unsigned int i = 0; i < blobs.size(); i++) {
-
-		if (blobs[i].blnStillBeingTracked == true) {
-			cv::rectangle(imgFrame2Copy, blobs[i].currentBoundingRect, SCALAR_RED, 2);
-
-			int intFontFace = CV_FONT_HERSHEY_SIMPLEX;
-			double dblFontScale = blobs[i].dblCurrentDiagonalSize / 60.0;
-			int intFontThickness = (int)std::round(dblFontScale * 1.0);
-
-			cv::putText(imgFrame2Copy, std::to_string(i), blobs[i].centerPositions.back(), intFontFace, dblFontScale, SCALAR_GREEN, intFontThickness);
-		}
-	}
-}
-
-
-
-
-
-
-
 
