@@ -15,5 +15,7 @@ extern bool isBlockDifferentFromPrevBlock(int nFrame, int r, int c);
 extern LNFramesOfBlocks matchingFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoOfBlockCol]
 	, int nCurrLNFrameIndex
 	, int nPrevLNFrameIndex);
+extern void findLNOutputFrames(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks);
+extern void writeFramesToPdf(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks);
 
 #endif    // _H_LNPOSTPROCESS_
