@@ -35,6 +35,8 @@ extern int fps;
 extern int nNoOfPixelsOfBlockRow;
 extern int nNoOfPixelsOfBlockCol;
 extern LNArrayOfBlock LNArrayOfBlockObj[nNoOfBlockRow][nNoOfBlockCol];
+extern int nNoOfFramesProcessed;
+
 
 //functions declarations.
 extern void initialize();

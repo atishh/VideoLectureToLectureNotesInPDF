@@ -10,6 +10,7 @@ int fps = 0;
 int nNoOfPixelsOfBlockRow = 0;
 int nNoOfPixelsOfBlockCol = 0;
 LNArrayOfBlock LNArrayOfBlockObj[nNoOfBlockRow][nNoOfBlockCol];
+int nNoOfFramesProcessed = 0;
 
 void initialize()
 {

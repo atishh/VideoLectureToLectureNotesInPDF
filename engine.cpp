@@ -49,3 +49,23 @@ void createBlocksOfFrame(cv::Mat& imgFrame1CopyLN, int nCurrFrameNum)
 		}
 	}
 }
+
+void drawDiagRectanges(cv::Mat& imgFrame1CopyLN, int nCurrentBlockTemp)
+{
+	for (int r = 0; r < nNoOfBlockRow; r++) {
+		for (int c = 0; c < nNoOfBlockCol; c++) {
+			int startPosY = r*nNoOfPixelsOfBlockRow;
+			int endPosY = (r + 1)*nNoOfPixelsOfBlockRow;
+			int startPosX = c*nNoOfPixelsOfBlockCol;
+			int endPosX = (c + 1)*nNoOfPixelsOfBlockCol;
+			cv::rectangle(imgFrame1CopyLN, cv::Point(startPosX, startPosY), cv::Point(endPosX, endPosY), cv::Scalar(110, 220, 0), 2, 8);
+			int intFontFace = CV_FONT_HERSHEY_SIMPLEX;
+			//	int nCurrentBlock = LNArrayOfBlockObj[r][c].nNoOfBlocks - 1;
+			int nCurrentBlock = nCurrentBlockTemp;
+			int noOfWhitePixels = (LNArrayOfBlockObj[r][c].arrayOfBlock[nCurrentBlock]).nNoOfPoints;
+			int textPointX = (startPosX + endPosX) / 2;
+			int textPointY = (startPosY + endPosY) / 2;
+			cv::putText(imgFrame1CopyLN, std::to_string(noOfWhitePixels), cv::Point(textPointX, textPointY), intFontFace, 1, cv::Scalar(110, 220, 0), 1);
+		}
+	}
+}

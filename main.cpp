@@ -2,72 +2,12 @@
 
 #include "init.h"
 #include "engine.h"
+#include "postProcess.h"
 
 #define SHOW_STEPS            // un-comment or comment this line to show steps or not
 
-void drawDiagRectanges(cv::Mat& imgFrame1CopyLN, int nCurrentBlockTemp)
-{
-	for (int r = 0; r < nNoOfBlockRow; r++) {
-		for (int c = 0; c < nNoOfBlockCol; c++) {
-			int startPosY = r*nNoOfPixelsOfBlockRow;
-			int endPosY = (r + 1)*nNoOfPixelsOfBlockRow;
-			int startPosX = c*nNoOfPixelsOfBlockCol;
-			int endPosX = (c + 1)*nNoOfPixelsOfBlockCol;
-			cv::rectangle(imgFrame1CopyLN, cv::Point(startPosX, startPosY), cv::Point(endPosX, endPosY), cv::Scalar(110, 220, 0), 2, 8);
-			int intFontFace = CV_FONT_HERSHEY_SIMPLEX;
-		//	int nCurrentBlock = LNArrayOfBlockObj[r][c].nNoOfBlocks - 1;
-			int nCurrentBlock = nCurrentBlockTemp;
-			int noOfWhitePixels = (LNArrayOfBlockObj[r][c].arrayOfBlock[nCurrentBlock]).nNoOfPoints;
-			int textPointX = (startPosX + endPosX) / 2;
-			int textPointY = (startPosY + endPosY) / 2;
-			cv::putText(imgFrame1CopyLN, std::to_string(noOfWhitePixels), cv::Point(textPointX, textPointY), intFontFace, 1, cv::Scalar(110, 220, 0), 1);
-		}
-	}
-}
-
-LNFramesOfBlocks calculateFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoOfBlockCol]
-										, int nCurrLNOutputBlockNum 
-										, int nPrevLNOutputBlockNum)
-{
-	LNFramesOfBlocks LNFramesOfBlocksObj;
-	int** ary = new int*[nNoOfBlockRow];
-	for (int i = 0; i < nNoOfBlockRow; ++i)
-		ary[i] = new int[nNoOfBlockCol];
-	LNFramesOfBlocksObj.nFrameNumOfBlock = ary;
-	LNFramesOfBlocksObj.nPrevFrameNum = 
-		(LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNOutputBlockNum-1]).nFrameNum;
-	LNFramesOfBlocksObj.nCurrBlockNum = nCurrLNOutputBlockNum;
-	LNFramesOfBlocksObj.nCurrFrameNum =
-		(LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNOutputBlockNum]).nFrameNum;
-	std::cout << " Final Frame no "
-		<< (LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNOutputBlockNum]).nFrameNum
-		<< "\n";
-	for (int r = 0; r < nNoOfBlockRow; r++) {
-		for (int c = 0; c < nNoOfBlockCol; c++) {
-			int nCorrectFrameNo = (LNArrayOfBlockObj[r][c].arrayOfBlock[nCurrLNOutputBlockNum]).nFrameNum;
-			int bFound = 0;
-			//Iterate backward till matching frame of block is found
-			for (int i = nCurrLNOutputBlockNum; i > (nPrevLNOutputBlockNum + 1); i--) {
-				int nCurrNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfPoints;
-				int nPrevNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i - 1]).nNoOfPoints;
-				int diff = abs(nCurrNoOfPoints - nPrevNoOfPoints);
-				if (((nCurrNoOfPoints > 20) && (diff <= (nCurrNoOfPoints / 7))) ||
-					((nCurrNoOfPoints <= 20) && (diff < 10)))  {
-					nCorrectFrameNo = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nFrameNum;
-					bFound = 1;
-					break;
-				}
-			}
-			ary[r][c] = nCorrectFrameNo;
-			std::cout << nCorrectFrameNo << "," << bFound << " ";
-		}
-		std::cout << "\n";
-	}
-	return LNFramesOfBlocksObj;
-}
-
 void displayFramesOfBlocks(cv::VideoCapture &capVideo, LNFramesOfBlocks LNFramesOfBlocksObj,
-	int nLNOutputFrameNum, std::vector<int> &arrayOfPossibleLNFrame,
+	int nLNOutputFrameNum, std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks,
 	LNArrayOfBlock LNArrayOfBlockObj[][nNoOfBlockCol], cv::Mat& imgFrame1)
 {
 	cv::Mat imgFrame2;
@@ -83,8 +23,8 @@ void displayFramesOfBlocks(cv::VideoCapture &capVideo, LNFramesOfBlocks LNFrames
 
 	//Print the frames numbers.
 	std::cout << "Possible LN Frames are ";
-	for (int i = 0; i < arrayOfPossibleLNFrame.size(); i++) {
-		int nLNOutputFrameNum = arrayOfPossibleLNFrame[i];
+	for (int i = 0; i < arrayOfFramesOfBlocks.size(); i++) {
+		int nLNOutputFrameNum = (arrayOfFramesOfBlocks[i]).nCurrFrameNum;
 		std::cout << nLNOutputFrameNum << " ";
 	}
 	std::cout << "\n";
@@ -193,24 +133,13 @@ int main(void) {
 	}
 
 	//Post process starts here
-	int nNoOfFramesProcessed = LNArrayOfBlockObj[0][0].nNoOfBlocks;
+	nNoOfFramesProcessed = LNArrayOfBlockObj[0][0].nNoOfBlocks;
 
-	if (nPrintPostProcess) {
-		for (int r = 0; r < nNoOfBlockRow; r++) {
-			for (int c = 0; c < nNoOfBlockCol; c++) {
-				std::cout << "WhitePixels[" << r << "][" << c << "] ";
-				for (int i = 0; i < nNoOfFramesProcessed; i++) {
-					std::cout << (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfPoints << " ";
-				}
-				std::cout << "\n";
-			}
-		}
-	}
+	printWhitePixelsForDiag();
 
 	std::vector<LNFramesOfBlocks> arrayOfFramesOfBlocks;
 
 	//Find possible LN output Frames
-	std::vector<int> arrayOfPossibleLNFrame;
 	int nTotalBlocks = nNoOfBlockRow*nNoOfBlockCol;
 	int nTotalNotMatchingBlock  = 0;
 	int nTotalNotMatchingBlockPrev = 0;
@@ -222,11 +151,7 @@ int main(void) {
 		nTotalNotMatchingBlock = 0;
 		for (int r = 0; r < nNoOfBlockRow; r++) {
 			for (int c = 0; c < nNoOfBlockCol; c++) {
-				int prevNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i - 1]).nNoOfPoints;
-				int currNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfPoints;
-				//Ideally the difference should be zero.
-				int diff = abs(currNoOfPoints - prevNoOfPoints);
-				if ((diff > (currNoOfPoints / 7)) && (diff > 10)) {
+				if (isBlockDifferentFromPrevBlock(i, r, c)) {
 					nTotalNotMatchingBlock++;
 				}
 			}
@@ -246,9 +171,9 @@ int main(void) {
 			nPrevLNOutputBlockNum = nCurrLNOutputBlockNum;
 			nCurrLNOutputBlockNum = i - 1;
 			int nCurrFrameNum = (LNArrayOfBlockObj[0][0].arrayOfBlock[i - 1]).nFrameNum;
-			arrayOfPossibleLNFrame.push_back(nCurrFrameNum);
 			LNFramesOfBlocks LNFramesOfBlocksObj;
-			LNFramesOfBlocksObj = calculateFramesOfBlocks(LNArrayOfBlockObj, nCurrLNOutputBlockNum,
+			LNFramesOfBlocksObj.nCurrFrameNum = nCurrFrameNum;
+			LNFramesOfBlocksObj = matchingFramesOfBlocks(LNArrayOfBlockObj, nCurrLNOutputBlockNum,
 				nPrevLNOutputBlockNum);
 			arrayOfFramesOfBlocks.push_back(LNFramesOfBlocksObj);
 		}
@@ -258,22 +183,21 @@ int main(void) {
 		nPrevLNOutputBlockNum = nCurrLNOutputBlockNum;
 		nCurrLNOutputBlockNum = nNoOfFramesProcessed - 1;
 		int nCurrFrameNum = (LNArrayOfBlockObj[0][0].arrayOfBlock[nNoOfFramesProcessed - 1]).nFrameNum;
-		arrayOfPossibleLNFrame.push_back(nCurrFrameNum);
 		LNFramesOfBlocks LNFramesOfBlocksObj;
-		LNFramesOfBlocksObj = calculateFramesOfBlocks(LNArrayOfBlockObj, nCurrLNOutputBlockNum,
+		LNFramesOfBlocksObj = matchingFramesOfBlocks(LNArrayOfBlockObj, nCurrLNOutputBlockNum,
 			nPrevLNOutputBlockNum);
 		arrayOfFramesOfBlocks.push_back(LNFramesOfBlocksObj);
 	}
 
 
 	std::list<Magick::Image> imageList;
-	for (int i = 0; i < arrayOfPossibleLNFrame.size(); i++) {
-		int nLNOutputFrameNum = arrayOfPossibleLNFrame[i];
+	for (int i = 0; i < arrayOfFramesOfBlocks.size(); i++) {
 		LNFramesOfBlocks LNFramesOfBlocksObj;
 		LNFramesOfBlocksObj = arrayOfFramesOfBlocks[i];
+		int nLNOutputFrameNum = LNFramesOfBlocksObj.nCurrFrameNum;
 		cv::Mat imgFrame1;
 		displayFramesOfBlocks(capVideo, LNFramesOfBlocksObj, nLNOutputFrameNum, 
-			arrayOfPossibleLNFrame, LNArrayOfBlockObj, imgFrame1);
+			arrayOfFramesOfBlocks, LNArrayOfBlockObj, imgFrame1);
 		drawDiagRectanges(imgFrame1, LNFramesOfBlocksObj.nCurrBlockNum);
 		std::string finalImageStr = "FinalImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
 		std::string finalImageStr1 = "../tmp/" + finalImageStr + ".jpg";

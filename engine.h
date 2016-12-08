@@ -1,4 +1,4 @@
-// init.h
+// engine.h
 
 #ifndef _H_LNENGINE_
 #define _H_LNENGINE_
@@ -11,5 +11,7 @@
 //functions declarations.
 extern void shiftAndDiff(cv::Mat& imgFrame1CopyLN);
 extern void createBlocksOfFrame(cv::Mat& imgFrame1CopyLN, int nCurrFrameNum);
+extern void drawDiagRectanges(cv::Mat& imgFrame1CopyLN, int nCurrentBlockTemp);
+
 
 #endif    // _H_LNENGINE_
