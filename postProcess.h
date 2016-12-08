@@ -16,6 +16,7 @@ extern LNFramesOfBlocks matchingFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[
 	, int nCurrLNFrameIndex
 	, int nPrevLNFrameIndex);
 extern void findLNOutputFrames(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks);
+extern void deleteOverlappingFrames(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks);
 extern void writeFramesToPdf(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks);
 
 #endif    // _H_LNPOSTPROCESS_

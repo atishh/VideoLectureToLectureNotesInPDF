@@ -183,6 +183,9 @@ void writeFramesToPdf(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 	for (int i = 0; i < arrayOfFramesOfBlocks.size(); i++) {
 		LNFramesOfBlocks LNFramesOfBlocksObj;
 		LNFramesOfBlocksObj = arrayOfFramesOfBlocks[i];
+		if (LNFramesOfBlocksObj.bIsDeleted) {
+			continue;
+		}
 		int nLNOutputFrameNum = LNFramesOfBlocksObj.nCurrFrameNum;
 		cv::Mat imgFrame1;
 		displayFramesOfBlocks(LNFramesOfBlocksObj,
@@ -199,4 +202,50 @@ void writeFramesToPdf(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 	//Write the final pdf
 	std::string finalImageStr3 = "../tmpP/finalImage.pdf";
 	Magick::writeImages(imageList.begin(), imageList.end(), finalImageStr3);
+}
+
+bool IsSubsetOf(int nFrameIndex1, int nFrameIndex2)
+{
+	int nNoOfMatchingBlocks = 0;
+	for (int r = 0; r < nNoOfBlockRow; r++) {
+		for (int c = 0; c < nNoOfBlockCol; c++) {
+			int nNoOfPoints1 = (LNArrayOfBlockObj[r][c].arrayOfBlock[nFrameIndex1]).nNoOfPoints;
+			int nNoOfPoints2 = (LNArrayOfBlockObj[r][c].arrayOfBlock[nFrameIndex2]).nNoOfPoints;
+			int diff = abs(nNoOfPoints1 - nNoOfPoints2);
+			if (nNoOfPoints1 < 10) {
+				nNoOfMatchingBlocks++;
+			}
+			else if ((diff < (nNoOfPoints1 / 10))) {
+				nNoOfMatchingBlocks++;
+			}
+		}
+	}
+	std::cout << "IsSubsetOf "<< nFrameIndex1 << " " << nFrameIndex2 <<
+		" NoOfMatchingBlock = " << nNoOfMatchingBlocks << "\n";
+	int nTotalBlocks = nNoOfBlockRow*nNoOfBlockCol;
+	if ((nNoOfMatchingBlocks * 10) > (nTotalBlocks * 9)) {
+		return true;
+	}
+	return false;
+}
+
+void deleteOverlappingFrames(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
+{
+	std::list<Magick::Image> imageList;
+	for (int i = 1; i < arrayOfFramesOfBlocks.size(); i++) {
+		LNFramesOfBlocks LNFramesOfBlocksObj;
+		LNFramesOfBlocksObj = arrayOfFramesOfBlocks[i - 1];
+		int nFrameIndex1 = LNFramesOfBlocksObj.nCurrBlockNum;
+		LNFramesOfBlocksObj = arrayOfFramesOfBlocks[i];
+		int nFrameIndex2 = LNFramesOfBlocksObj.nCurrBlockNum;
+		if (IsSubsetOf(nFrameIndex1, nFrameIndex2)) {
+			arrayOfFramesOfBlocks[i - 1].bIsDeleted = true;
+			std::cout << "frame = " << arrayOfFramesOfBlocks[i - 1].nCurrFrameNum
+				<< " is deleted \n";
+		}
+		else {
+			arrayOfFramesOfBlocks[i - 1].bIsDeleted = false;
+		}
+		arrayOfFramesOfBlocks[i].bIsDeleted = false;
+	}
 }

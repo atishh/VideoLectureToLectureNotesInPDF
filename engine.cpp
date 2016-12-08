@@ -23,6 +23,18 @@ void shiftAndDiff(cv::Mat& imgFrame1CopyLN)
 	}
 }
 
+void convertToBW(cv::Mat& imgFrame1CopyLN)
+{
+	cv::cvtColor(imgFrame1CopyLN, imgFrame1CopyLN, CV_BGR2GRAY);
+	cv::imshow("GrayImage", imgFrame1CopyLN);
+
+	shiftAndDiff(imgFrame1CopyLN);
+	cv::imshow("DiffImage", imgFrame1CopyLN);
+
+	cv::threshold(imgFrame1CopyLN, imgFrame1CopyLN, 20, 255.0, CV_THRESH_BINARY);
+	cv::imshow("ThresholdImage", imgFrame1CopyLN);
+}
+
 void createBlocksOfFrame(cv::Mat& imgFrame1CopyLN, int nCurrFrameNum)
 {
 	for (int r = 0; r < nNoOfBlockRow; r++) {

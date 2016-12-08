@@ -42,17 +42,7 @@ int main(void) {
 
 		cv::Mat imgFrame1CopyLN = imgFrame1.clone();
 
-		cv::cvtColor(imgFrame1CopyLN, imgFrame1CopyLN, CV_BGR2GRAY);
-
-		cv::imshow("GrayImage", imgFrame1CopyLN);
-
-		shiftAndDiff(imgFrame1CopyLN);
-
-		cv::imshow("DiffImage", imgFrame1CopyLN);
-
-		cv::threshold(imgFrame1CopyLN, imgFrame1CopyLN, 20, 255.0, CV_THRESH_BINARY);
-		
-		cv::imshow("ThresholdImage", imgFrame1CopyLN);
+		convertToBW(imgFrame1CopyLN);
 
 		//Populate Array of Block with Block of current frame. 
 		createBlocksOfFrame(imgFrame1CopyLN, nCurrFrameNum);
@@ -93,6 +83,8 @@ int main(void) {
 
 	//Find possible LN output Frames
 	findLNOutputFrames(arrayOfFramesOfBlocks);
+
+	deleteOverlappingFrames(arrayOfFramesOfBlocks);
 
 	writeFramesToPdf(arrayOfFramesOfBlocks);
 
