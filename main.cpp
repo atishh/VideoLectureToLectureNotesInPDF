@@ -16,8 +16,8 @@ int main(void) {
 	cv::Mat imgFrame1;
 	cv::Mat imgFrame2;
 
-	capVideo.open("../mod03lec10.mp4");
-	//capVideo.open("../Lecture14.mp4");
+	//capVideo.open("../mod03lec10.mp4");
+	capVideo.open("../Lecture14.mp4");
 	//capVideo.open("../MIT3_054S15_L15_300k.mp4");
 	//capVideo.open("../MIT6_006F11_lec02_300k.mp4");
 	//capVideo.open("../IndianGeography.mp4");
@@ -40,6 +40,9 @@ int main(void) {
 
 	bool blnFirstFrame = true;
 
+	int nCurrFrameNumCache = 0;
+	int nIgnoreNextFramesCache = 0;
+
 	while (capVideo.isOpened() && chCheckForEscKey != 27) {
 
 		cv::imshow("OrigImage", imgFrame1);
@@ -59,10 +62,48 @@ int main(void) {
 
 		// now we prepare for the next iteration
 
-		frameCount++;
-		std::cout << "frame count = " << frameCount << "\n";
+		int nCurrLNFrameIndex = LNArrayOfBlockObj[0][0].nNoOfBlocks - 1;
+		if ((nIgnoreNextFrames > 100) && (nCurrLNFrameIndex > 1) &&
+			isThisPossibleOutputFrame(nCurrLNFrameIndex, true)) {
+			std::cout << " Ignore next frames changed from " << nIgnoreNextFrames
+				<< " to 100 " << "\n";
+			nCurrFrameNumCache = nCurrFrameNum;
+			nStartFrame = nCurrFrameNum - 2*nIgnoreNextFrames;
+			frameCount = 1;
+			nIgnoreNextFramesCache = nIgnoreNextFrames;
+			nIgnoreNextFrames = 100;
+			for (int r = 0; r < nNoOfBlockRow; r++) {
+				for (int c = 0; c < nNoOfBlockCol; c++) {
+					(LNArrayOfBlockObj[r][c].arrayOfBlock).pop_back();
+					(LNArrayOfBlockObj[r][c].nNoOfBlocks)--;
+				}
+			}
+			for (int r = 0; r < nNoOfBlockRow; r++) {
+				for (int c = 0; c < nNoOfBlockCol; c++) {
+					(LNArrayOfBlockObj[r][c].arrayOfBlock).pop_back();
+					(LNArrayOfBlockObj[r][c].nNoOfBlocks)--;
+				}
+			}
+		}
+		else {
+			if ((nCurrFrameNumCache > 0) && (nCurrFrameNum > nCurrFrameNumCache+ nIgnoreNextFramesCache)) {
+				std::cout << " Reverting Ignore next frames changed from 100 to"
+					<< nIgnoreNextFramesCache << "\n";
+				nIgnoreNextFrames = nIgnoreNextFramesCache;
+				nStartFrame = nCurrFrameNum;
+				frameCount = 1;
+				nCurrFrameNumCache = 0;
+			}
+			else {
+				frameCount++;
+			}
+		}
+
 		capVideo.set(CV_CAP_PROP_POS_FRAMES, nStartFrame + nIgnoreNextFrames * frameCount);
 		nCurrFrameNum = nStartFrame + nIgnoreNextFrames * frameCount;
+		std::cout << "frame count = " << frameCount << " frame no = "
+			<< nCurrFrameNum << "\n";
+
 		if (nCurrFrameNum >= totalFrames) {
 			break;
 		}

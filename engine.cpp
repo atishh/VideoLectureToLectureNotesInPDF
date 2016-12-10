@@ -114,3 +114,21 @@ void findTotalNMB(int fNo)
 		<< " totalBlocks = " << nTotalBlocks << " totalNotMatchingBlocks = "
 		<< nTotalNMB << "\n";
 }
+
+bool isThisPossibleOutputFrame(int fNo, bool bRelax /*= false*/)
+{
+	findTotalNMB(fNo);
+
+	int nDiffOfNMBPercent = nTotalNMB - nTotalNMBPrev;
+	nDiffOfNMBPercent = (nDiffOfNMBPercent * 100) / nTotalBlocks;
+	int nTotalNMBPercent = (nTotalNMB * 100) / nTotalBlocks;
+	int nTotalNMBPrevPercent = (nTotalNMBPrev * 100) / nTotalBlocks;
+	//If 80% of total block doesn't matches && atmost 20% of previous total block doesn't match
+	if (((nTotalNMBPercent > 70) && (nTotalNMBPrevPercent < 30)) ||
+		((nDiffOfNMBPercent > 50) /*&& (nTotalNMBPrev < 20)*/)) {
+		return true;
+	}
+	if (bRelax && (nDiffOfNMBPercent > 40))
+		return true;
+	return false;
+}

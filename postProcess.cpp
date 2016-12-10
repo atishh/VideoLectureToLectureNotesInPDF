@@ -62,22 +62,17 @@ LNFramesOfBlocks matchingFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoOf
 void findLNOutputFrames(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 {
 	//Find possible LN output Frames
+	nTotalNMB = 0; //NMB = Not Matching Block
+	nTotalNMBPrev = 0;
+	nTotalBWithThresh = 0; //Total blocks having some threshold
 	int nCurrLNFrameIndex = 0;
 	int nPrevLNFrameIndex = 0;
 
 	for (int i = 1; i < nNoOfFramesProcessed; i++) {
-		findTotalNMB(i);
 
-		int nDiffOfNMBPercent = nTotalNMB - nTotalNMBPrev;
-		nDiffOfNMBPercent = (nDiffOfNMBPercent * 100) / nTotalBlocks;
-		int nTotalNMBPercent = (nTotalNMB * 100) / nTotalBlocks;
-		int nTotalNMBPrevPercent = (nTotalNMBPrev * 100) / nTotalBlocks;
-		//If 80% of total block doesn't matches && atmost 20% of previous total block doesn't match
-		if (((nTotalNMBPercent > 70) && (nTotalNMBPrevPercent < 30)) ||
-			((nDiffOfNMBPercent > 50) && (nTotalNMBPrev < 20))) {
+		if (isThisPossibleOutputFrame(i)) {
 			nPrevLNFrameIndex = nCurrLNFrameIndex;
 			nCurrLNFrameIndex = i - 1;
-			int nCurrFrameNum = (LNArrayOfBlockObj[0][0].arrayOfBlock[i - 1]).nFrameNum;
 			LNFramesOfBlocks LNFramesOfBlocksObj;
 			LNFramesOfBlocksObj = matchingFramesOfBlocks(LNArrayOfBlockObj, nCurrLNFrameIndex,
 				nPrevLNFrameIndex);

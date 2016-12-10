@@ -9,6 +9,7 @@ int totalFrames = 0;
 int fps = 0;
 int nNoOfPixelsOfBlockRow = 0;
 int nNoOfPixelsOfBlockCol = 0;
+int nIgnoreNextFrames = 300;
 LNArrayOfBlock LNArrayOfBlockObj[nNoOfBlockRow][nNoOfBlockCol];
 int nNoOfFramesProcessed = 0;
 
