@@ -16,17 +16,6 @@ void printWhitePixelsForDiag()
 	}
 }
 
-bool isBlockDifferentFromPrevBlock(int nFrame, int r, int c)
-{
-	int prevNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[nFrame - 1]).nNoOfPoints;
-	int currNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[nFrame]).nNoOfPoints;
-	//Ideally the difference should be zero.
-	int diff = abs(currNoOfPoints - prevNoOfPoints);
-	if ((diff > (currNoOfPoints / 7)) && (diff > 10)) {
-		return true;
-	}
-	return false;
-}
 
 LNFramesOfBlocks matchingFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoOfBlockCol]
 	, int nCurrLNFrameIndex
@@ -69,34 +58,15 @@ LNFramesOfBlocks matchingFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoOf
 	return LNFramesOfBlocksObj;
 }
 
+
 void findLNOutputFrames(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 {
 	//Find possible LN output Frames
-	int nTotalBlocks = nNoOfBlockRow*nNoOfBlockCol;
-	int nTotalNMB = 0; //NMB = Not Matching Block
-	int nTotalNMBPrev = 0;
 	int nCurrLNFrameIndex = 0;
 	int nPrevLNFrameIndex = 0;
-	int nTotalBWithThresh = 0; //Total blocks having some threshold
 
 	for (int i = 1; i < nNoOfFramesProcessed; i++) {
-		nTotalNMBPrev = nTotalNMB;
-		nTotalNMB = 0;
-		nTotalBWithThresh = 0;
-		for (int r = 0; r < nNoOfBlockRow; r++) {
-			for (int c = 0; c < nNoOfBlockCol; c++) {
-				if (isBlockDifferentFromPrevBlock(i, r, c)) {
-					nTotalNMB++;
-				}
-				if ((LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfPoints > 50) {
-					nTotalBWithThresh++;
-				}
-			}
-		}
-
-		std::cout << "Frame = " << (LNArrayOfBlockObj[0][0].arrayOfBlock[i - 1]).nFrameNum
-			<< " totalBlocks = " << nTotalBlocks << " totalNotMatchingBlocks = "
-			<< nTotalNMB << "\n";
+		findTotalNMB(i);
 
 		int nDiffOfNMBPercent = nTotalNMB - nTotalNMBPrev;
 		nDiffOfNMBPercent = (nDiffOfNMBPercent * 100) / nTotalBlocks;
@@ -114,7 +84,10 @@ void findLNOutputFrames(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 			arrayOfFramesOfBlocks.push_back(LNFramesOfBlocksObj);
 		}
 	}
+
 	//Check if Last Frame is correct, then add it.
+	//findTotalNMB(nNoOfFramesProcessed - 1);
+
 	if ((nTotalNMB * 10 < nTotalBlocks * 3) &&
 		(nTotalBWithThresh * 10 > nTotalBlocks)) {
 		nPrevLNFrameIndex = nCurrLNFrameIndex;
@@ -222,7 +195,7 @@ bool IsSubsetOf(int nFrameIndex1, int nFrameIndex2)
 	}
 	std::cout << "IsSubsetOf "<< nFrameIndex1 << " " << nFrameIndex2 <<
 		" NoOfMatchingBlock = " << nNoOfMatchingBlocks << "\n";
-	int nTotalBlocks = nNoOfBlockRow*nNoOfBlockCol;
+
 	if ((nNoOfMatchingBlocks * 10) > (nTotalBlocks * 9)) {
 		return true;
 	}

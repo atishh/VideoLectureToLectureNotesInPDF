@@ -18,6 +18,7 @@ const int nPrint = 0;
 const int nPrintPostProcess = 0;
 const int nNoOfBlockRow = 10;
 const int nNoOfBlockCol = 10;
+const int nTotalBlocks = nNoOfBlockRow*nNoOfBlockCol;
 const int nIgnoreNextFrames = 100;
 const bool bEnableShiftAndDiff = 1;
 const cv::Scalar SCALAR_BLACK = cv::Scalar(0.0, 0.0, 0.0);
@@ -37,6 +38,10 @@ extern int nNoOfPixelsOfBlockCol;
 extern LNArrayOfBlock LNArrayOfBlockObj[nNoOfBlockRow][nNoOfBlockCol];
 extern int nNoOfFramesProcessed;
 
+//globals related to matching of previous frame to current
+extern int nTotalNMB; //NMB = Not Matching Block
+extern int nTotalNMBPrev;
+extern int nTotalBWithThresh; //Total blocks having some threshold
 
 //functions declarations.
 extern void initialize();

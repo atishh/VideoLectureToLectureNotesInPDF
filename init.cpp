@@ -12,6 +12,11 @@ int nNoOfPixelsOfBlockCol = 0;
 LNArrayOfBlock LNArrayOfBlockObj[nNoOfBlockRow][nNoOfBlockCol];
 int nNoOfFramesProcessed = 0;
 
+//globals related to matching of previous frame to current
+int nTotalNMB = 0; //NMB = Not Matching Block
+int nTotalNMBPrev = 0;
+int nTotalBWithThresh = 0; //Total blocks having some threshold
+
 void initialize()
 {
 	if (!capVideo.isOpened()) {                                                 // if unable to open video file

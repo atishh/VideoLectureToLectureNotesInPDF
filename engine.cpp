@@ -81,3 +81,36 @@ void drawDiagRectanges(cv::Mat& imgFrame1CopyLN, int nCurrentBlockTemp)
 		}
 	}
 }
+
+bool isBlockDifferentFromPrevBlock(int nFrame, int r, int c)
+{
+	int prevNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[nFrame - 1]).nNoOfPoints;
+	int currNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[nFrame]).nNoOfPoints;
+	//Ideally the difference should be zero.
+	int diff = abs(currNoOfPoints - prevNoOfPoints);
+	if ((diff > (currNoOfPoints / 7)) && (diff > 10)) {
+		return true;
+	}
+	return false;
+}
+
+//Find total not matching blocks
+void findTotalNMB(int fNo)
+{
+	nTotalNMBPrev = nTotalNMB;
+	nTotalNMB = 0;
+	nTotalBWithThresh = 0;
+	for (int r = 0; r < nNoOfBlockRow; r++) {
+		for (int c = 0; c < nNoOfBlockCol; c++) {
+			if (isBlockDifferentFromPrevBlock(fNo, r, c)) {
+				nTotalNMB++;
+			}
+			if ((LNArrayOfBlockObj[r][c].arrayOfBlock[fNo]).nNoOfPoints > 50) {
+				nTotalBWithThresh++;
+			}
+		}
+	}
+	std::cout << "Frame = " << (LNArrayOfBlockObj[0][0].arrayOfBlock[fNo - 1]).nFrameNum
+		<< " totalBlocks = " << nTotalBlocks << " totalNotMatchingBlocks = "
+		<< nTotalNMB << "\n";
+}

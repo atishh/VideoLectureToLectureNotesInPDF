@@ -4,16 +4,20 @@
 #include "engine.h"
 #include "postProcess.h"
 
+#include <time.h>
+
 #define SHOW_STEPS            // un-comment or comment this line to show steps or not
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int main(void) {
 
+	clock_t tStart = clock();
+
 	cv::Mat imgFrame1;
 	cv::Mat imgFrame2;
 
-	//capVideo.open("../mod03lec10.mp4");
-	capVideo.open("../Lecture14.mp4");
+	capVideo.open("../mod03lec10.mp4");
+	//capVideo.open("../Lecture14.mp4");
 	//capVideo.open("../MIT3_054S15_L15_300k.mp4");
 	//capVideo.open("../MIT6_006F11_lec02_300k.mp4");
 	//capVideo.open("../IndianGeography.mp4");
@@ -90,6 +94,8 @@ int main(void) {
 
 	//Post process ends here
 	
+	printf("Time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
+
 	if (chCheckForEscKey != 27) {               // if the user did not press esc (i.e. we reached the end of the video)
 		cv::waitKey(0);                         // hold the windows open to allow the "end of video" message to show
 	}
