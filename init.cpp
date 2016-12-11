@@ -9,7 +9,6 @@ int totalFrames = 0;
 int fps = 0;
 int nNoOfPixelsOfBlockRow = 0;
 int nNoOfPixelsOfBlockCol = 0;
-int nIgnoreNextFrames = 300;
 LNArrayOfBlock LNArrayOfBlockObj[nNoOfBlockRow][nNoOfBlockCol];
 int nNoOfFramesProcessed = 0;
 
@@ -17,6 +16,14 @@ int nNoOfFramesProcessed = 0;
 int nTotalNMB = 0; //NMB = Not Matching Block
 int nTotalNMBPrev = 0;
 int nTotalBWithThresh = 0; //Total blocks having some threshold
+
+//globals related to adaptive setting of precision of frame rate
+int nStartFrame = 0;
+int frameCount = 0;
+int nCurrFrameNum = 0;
+int nIgnoreNextFrames = 300;
+int nCurrFrameNumCache = 0;
+int nIgnoreNextFramesCache = 0;
 
 void initialize()
 {

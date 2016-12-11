@@ -44,6 +44,14 @@ extern int nTotalNMB; //NMB = Not Matching Block
 extern int nTotalNMBPrev;
 extern int nTotalBWithThresh; //Total blocks having some threshold
 
+//globals related to adaptive setting of precision of frame rate
+extern int nStartFrame;
+extern int frameCount;
+extern int nCurrFrameNum;
+extern int nIgnoreNextFrames;
+extern int nCurrFrameNumCache;
+extern int nIgnoreNextFramesCache;
+
 //functions declarations.
 extern void initialize();
 

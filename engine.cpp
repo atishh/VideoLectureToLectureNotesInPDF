@@ -132,3 +132,56 @@ bool isThisPossibleOutputFrame(int fNo, bool bRelax /*= false*/)
 		return true;
 	return false;
 }
+
+bool isHigherPrecisionNeeded()
+{
+	int nCurrLNFrameIndex = LNArrayOfBlockObj[0][0].nNoOfBlocks - 1;
+	if ((nIgnoreNextFrames > 100) && (nCurrLNFrameIndex > 1) &&
+		isThisPossibleOutputFrame(nCurrLNFrameIndex, true)) {
+		return true;
+	}
+	return false;
+}
+
+void deleteLastBlock()
+{
+	for (int r = 0; r < nNoOfBlockRow; r++) {
+		for (int c = 0; c < nNoOfBlockCol; c++) {
+			(LNArrayOfBlockObj[r][c].arrayOfBlock).pop_back();
+			(LNArrayOfBlockObj[r][c].nNoOfBlocks)--;
+		}
+	}
+}
+
+void setHigherPrecisionFrameRate()
+{
+	std::cout << " Ignore next frames changed from " << nIgnoreNextFrames
+		<< " to 100 " << "\n";
+	nCurrFrameNumCache = nCurrFrameNum;
+	nStartFrame = nCurrFrameNum - 2 * nIgnoreNextFrames;
+	frameCount = 1;
+	nIgnoreNextFramesCache = nIgnoreNextFrames;
+	nIgnoreNextFrames = 100;
+
+	deleteLastBlock();
+	deleteLastBlock();
+}
+
+bool isLowerPrecisionNeeded()
+{
+	if ((nCurrFrameNumCache > 0) && 
+		(nCurrFrameNum > (nCurrFrameNumCache + nIgnoreNextFramesCache))) {
+		return true;
+	}
+	return false;
+}
+
+void setLowerPrecisionFrameRate()
+{
+	std::cout << " Reverting Ignore next frames changed from 100 to"
+		<< nIgnoreNextFramesCache << "\n";
+	nIgnoreNextFrames = nIgnoreNextFramesCache;
+	nStartFrame = nCurrFrameNum;
+	frameCount = 1;
+	nCurrFrameNumCache = 0;
+}
