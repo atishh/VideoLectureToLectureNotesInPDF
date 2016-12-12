@@ -24,8 +24,8 @@ int main(void) {
 	//capVideo.open("../The Lagrangian.mp4");
 	//capVideo.open("../IC_ENGINE.mp4");
 
-	//int nStartFrame = 500;
-	nStartFrame = 50500;
+	nStartFrame = 500;
+	//nStartFrame = 50500;
 
 	capVideo.set(CV_CAP_PROP_POS_FRAMES, nStartFrame);
 	frameCount = 2;
@@ -39,7 +39,6 @@ int main(void) {
 	char chCheckForEscKey = 0;
 
 	bool blnFirstFrame = true;
-
 
 	while (capVideo.isOpened() && chCheckForEscKey != 27) {
 

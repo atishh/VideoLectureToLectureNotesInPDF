@@ -13,6 +13,15 @@ public:
 	int nPrevFrameNum;
 	int nCurrBlockNum;
 	bool bIsDeleted;
+
+	LNFramesOfBlocks()
+	{
+		nFrameNumOfBlock = NULL;
+		nCurrFrameNum = -1;
+		nPrevFrameNum = -1;
+		nCurrBlockNum = -1;
+		bIsDeleted = false;
+	}
 };
 
 #endif    // _H_LNFRAME_
