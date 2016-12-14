@@ -185,3 +185,45 @@ void setLowerPrecisionFrameRate()
 	frameCount = 1;
 	nCurrFrameNumCache = 0;
 }
+
+void findHuman(cv::Mat& imgFrame1, cv::Mat& imgFrame1Prev, 
+	cv::Mat& imgThresh, cv::Mat& imgThreshPrev)
+{
+	if (bDeleteHuman == false)
+		return;
+
+	cv::Mat imgFrame1PrevCopyLN = imgFrame1Prev.clone();
+	cv::Mat imgFrame2CopyLN = imgFrame1.clone();
+	cv::cvtColor(imgFrame1PrevCopyLN, imgFrame1PrevCopyLN, CV_BGR2GRAY);
+	cv::cvtColor(imgFrame2CopyLN, imgFrame2CopyLN, CV_BGR2GRAY);
+	cv::GaussianBlur(imgFrame1PrevCopyLN, imgFrame1PrevCopyLN, cv::Size(5, 5), 0);
+	cv::GaussianBlur(imgFrame2CopyLN, imgFrame2CopyLN, cv::Size(5, 5), 0);
+	cv::Mat imgDifference;
+
+	cv::absdiff(imgFrame1PrevCopyLN, imgFrame2CopyLN, imgDifference);
+	cv::threshold(imgDifference, imgThresh, 30, 255.0, CV_THRESH_BINARY);
+//	cv::imshow("imgThreshForHuman", imgThresh);
+
+	cv::bitwise_and(imgThresh, imgThreshPrev, imgThreshPrev);
+	cv::bitwise_xor(imgThresh, imgThreshPrev, imgThresh);
+//	cv::imshow("imgThreshBitwiseForHuman", imgThresh);
+
+	cv::Mat structuringElement5x5 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
+	for (unsigned int i = 0; i < 2; i++) {
+		cv::dilate(imgThresh, imgThresh, structuringElement5x5);
+		cv::dilate(imgThresh, imgThresh, structuringElement5x5);
+		cv::erode(imgThresh, imgThresh, structuringElement5x5);
+	}
+	cv::imshow("imgDilateForHuman", imgThresh);
+}
+
+void deleteHuman(cv::Mat& imgFrame1CopyLN, cv::Mat& imgThresh)
+{
+	if (bDeleteHuman == false)
+		return;
+
+	cv::Mat imgThreshCopy = imgThresh.clone();
+	cv::bitwise_not(imgThreshCopy, imgThreshCopy);
+	cv::bitwise_and(imgFrame1CopyLN, imgThreshCopy, imgFrame1CopyLN);
+	cv::imshow("ImageAfterSub", imgFrame1CopyLN);
+}

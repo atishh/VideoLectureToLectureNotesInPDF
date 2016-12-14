@@ -20,5 +20,8 @@ extern bool isHigherPrecisionNeeded();
 extern void setHigherPrecisionFrameRate();
 extern bool isLowerPrecisionNeeded();
 extern void setLowerPrecisionFrameRate();
+extern void findHuman(cv::Mat& imgFrame1, cv::Mat& imgFrame1Prev,
+	cv::Mat& imgThresh, cv::Mat& imgThreshPrev);
+extern void deleteHuman(cv::Mat& imgFrame1CopyLN, cv::Mat& imgThresh);
 
 #endif    // _H_LNENGINE_

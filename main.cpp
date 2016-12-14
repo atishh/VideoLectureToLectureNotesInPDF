@@ -6,7 +6,6 @@
 
 #include <time.h>
 
-#define SHOW_STEPS            // un-comment or comment this line to show steps or not
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int main(void) {
@@ -14,18 +13,20 @@ int main(void) {
 	clock_t tStart = clock();
 
 	cv::Mat imgFrame1;
-	cv::Mat imgFrame2;
+	cv::Mat imgFrame1Prev;
+	cv::Mat imgThresh;
+	cv::Mat imgThreshPrev;
 
-	//capVideo.open("../mod03lec10.mp4");
-	capVideo.open("../Lecture14.mp4");
+	capVideo.open("../mod03lec10.mp4");
+	//capVideo.open("../Lecture14.mp4");
 	//capVideo.open("../MIT3_054S15_L15_300k.mp4");
 	//capVideo.open("../MIT6_006F11_lec02_300k.mp4");
 	//capVideo.open("../IndianGeography.mp4");
 	//capVideo.open("../The Lagrangian.mp4");
 	//capVideo.open("../IC_ENGINE.mp4");
 
-	nStartFrame = 500;
-	//nStartFrame = 50500;
+	//nStartFrame = 500;
+	nStartFrame = 50500;
 
 	capVideo.set(CV_CAP_PROP_POS_FRAMES, nStartFrame);
 	frameCount = 2;
@@ -33,8 +34,9 @@ int main(void) {
 
 	initialize();
 
+	capVideo.read(imgFrame1Prev);
 	capVideo.read(imgFrame1);
-	capVideo.read(imgFrame2);
+	imgThreshPrev = cv::Mat::zeros(imgFrame1.rows, imgFrame1.cols, CV_THRESH_BINARY);
 
 	char chCheckForEscKey = 0;
 
@@ -44,9 +46,13 @@ int main(void) {
 
 		cv::imshow("OrigImage", imgFrame1);
 
+		findHuman(imgFrame1, imgFrame1Prev, imgThresh, imgThreshPrev);
+
 		cv::Mat imgFrame1CopyLN = imgFrame1.clone();
 
 		convertToBW(imgFrame1CopyLN);
+
+		deleteHuman(imgFrame1CopyLN, imgThresh);
 
 		//Populate Array of Block with Block of current frame. 
 		createBlocksOfFrame(imgFrame1CopyLN, nCurrFrameNum);
@@ -80,6 +86,10 @@ int main(void) {
 		if (frameCount > 500)
 			break;
 		if ((capVideo.get(CV_CAP_PROP_POS_FRAMES)) < capVideo.get(CV_CAP_PROP_FRAME_COUNT)) {
+			if (bDeleteHuman) {
+				imgThreshPrev = imgThresh.clone();
+				imgFrame1Prev = imgFrame1.clone();
+			}
 			capVideo.read(imgFrame1);
 		}
 		else {
