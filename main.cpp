@@ -55,7 +55,7 @@ int main(void) {
 		deleteHuman(imgFrame1CopyLN, imgThresh);
 
 		//Populate Array of Block with Block of current frame. 
-		createBlocksOfFrame(imgFrame1CopyLN, nCurrFrameNum);
+		createBlocksOfFrame(imgFrame1CopyLN, nCurrFrameNum, imgThresh);
 
 		//Draw rectangles for diagnostics.
 		drawDiagRectanges(imgFrame1CopyLN, LNArrayOfBlockObj[0][0].nNoOfBlocks - 1);

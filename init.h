@@ -22,6 +22,7 @@ const int nTotalBlocks = nNoOfBlockRow*nNoOfBlockCol;
 
 const bool bEnableShiftAndDiff = 1;
 const bool bDeleteHuman = false;
+const int nDeleteHumanTh = 100; // Threshold no. of white pixels
 const cv::Scalar SCALAR_BLACK = cv::Scalar(0.0, 0.0, 0.0);
 const cv::Scalar SCALAR_WHITE = cv::Scalar(255.0, 255.0, 255.0);
 const cv::Scalar SCALAR_YELLOW = cv::Scalar(0.0, 255.0, 255.0);

@@ -14,7 +14,14 @@ public:
 	std::vector<cv::Point> whitePixels;
 	int nFrameNum;
 	int nNoOfPoints;
+	int nNoOfHumanPoints;
 
+	LNBlock()
+	{
+		nFrameNum = 0;
+		nNoOfPoints = 0;
+		nNoOfHumanPoints = 0;
+	}
 };
 
 #endif    // _H_LNBLOCK_

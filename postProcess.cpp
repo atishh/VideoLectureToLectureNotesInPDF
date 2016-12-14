@@ -40,14 +40,19 @@ LNFramesOfBlocks matchingFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoOf
 			int bFound = 0;
 			//Iterate backward till matching frame of block is found
 			for (int i = nCurrLNFrameIndex; i >(nPrevLNFrameIndex + 1); i--) {
-				int nCurrNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfPoints;
-				int nPrevNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i - 1]).nNoOfPoints;
-				int diff = abs(nCurrNoOfPoints - nPrevNoOfPoints);
-				if (((nCurrNoOfPoints > 20) && (diff <= (nCurrNoOfPoints / 7))) ||
-					((nCurrNoOfPoints <= 20) && (diff < 10))) {
-					nCorrectFrameNo = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nFrameNum;
-					bFound = 1;
-					break;
+				int nCurrNoOfHumanPnts = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfHumanPoints;
+				int nPrevNoOfHumanPnts = (LNArrayOfBlockObj[r][c].arrayOfBlock[i-1]).nNoOfHumanPoints;
+				if ((bDeleteHuman==false) || 
+					((nCurrNoOfHumanPnts < nDeleteHumanTh) && (nPrevNoOfHumanPnts < nDeleteHumanTh))) {
+					int nCurrNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nNoOfPoints;
+					int nPrevNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[i - 1]).nNoOfPoints;
+					int diff = abs(nCurrNoOfPoints - nPrevNoOfPoints);
+					if (((nCurrNoOfPoints > 20) && (diff <= (nCurrNoOfPoints / 7))) ||
+						((nCurrNoOfPoints <= 20) && (diff < 10))) {
+						nCorrectFrameNo = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nFrameNum;
+						bFound = 1;
+						break;
+					}
 				}
 			}
 			ary[r][c] = nCorrectFrameNo;
@@ -110,7 +115,7 @@ static void displayFramesOfBlocks(LNFramesOfBlocks LNFramesOfBlocksObj,
 	capVideo.set(CV_CAP_PROP_POS_FRAMES, nLNOutputFrameNum);
 	capVideo.read(imgFrame1);
 	finalImageStr = "IntermediateImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
-	//	cv::imshow(finalImage, imgFrame1);
+	//cv::imshow(finalImageStr, imgFrame1);
 
 	//Print the frames numbers.
 	std::cout << "Possible LN Frames are ";

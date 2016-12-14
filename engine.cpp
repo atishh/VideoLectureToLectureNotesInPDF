@@ -35,7 +35,7 @@ void convertToBW(cv::Mat& imgFrame1CopyLN)
 	cv::imshow("ThresholdImage", imgFrame1CopyLN);
 }
 
-void createBlocksOfFrame(cv::Mat& imgFrame1CopyLN, int nCurrFrameNum)
+void createBlocksOfFrame(cv::Mat& imgFrame1CopyLN, int nCurrFrameNum, cv::Mat& imgThresh)
 {
 	for (int r = 0; r < nNoOfBlockRow; r++) {
 		for (int c = 0; c < nNoOfBlockCol; c++) {
@@ -52,6 +52,13 @@ void createBlocksOfFrame(cv::Mat& imgFrame1CopyLN, int nCurrFrameNum)
 						pt.x = j;
 						(LNBlockObj.whitePixels).push_back(pt);
 						(LNBlockObj.nNoOfPoints)++;
+					}
+					if (bDeleteHuman) {
+						intensity2 = imgThresh.at<uchar>(i, j);
+						intensity = intensity2.val[0];
+						if (intensity == 255) {
+							(LNBlockObj.nNoOfHumanPoints)++;
+						}
 					}
 				}
 			}
@@ -100,19 +107,25 @@ void findTotalNMB(int fNo)
 	nTotalNMBPrev = nTotalNMB;
 	nTotalNMB = 0;
 	nTotalBWithThresh = 0;
+	int nTotalPoints = 0;
+	int nTotalHumanPnts = 0;
 	for (int r = 0; r < nNoOfBlockRow; r++) {
 		for (int c = 0; c < nNoOfBlockCol; c++) {
 			if (isBlockDifferentFromPrevBlock(fNo, r, c)) {
 				nTotalNMB++;
 			}
-			if ((LNArrayOfBlockObj[r][c].arrayOfBlock[fNo]).nNoOfPoints > 50) {
+			int nNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[fNo]).nNoOfPoints;
+			nTotalPoints += nNoOfPoints;
+			if (nNoOfPoints > 50) {
 				nTotalBWithThresh++;
 			}
+			nTotalHumanPnts += ((LNArrayOfBlockObj[r][c].arrayOfBlock[fNo]).nNoOfHumanPoints > nDeleteHumanTh);
 		}
 	}
 	std::cout << "Frame = " << (LNArrayOfBlockObj[0][0].arrayOfBlock[fNo - 1]).nFrameNum
 		<< " totalBlocks = " << nTotalBlocks << " totalNotMatchingBlocks = "
-		<< nTotalNMB << "\n";
+		<< nTotalNMB << " nTotalPoints = " << nTotalPoints 
+		<< " nTotalHumanPnts = " << nTotalHumanPnts << "\n" ;
 }
 
 bool isThisPossibleOutputFrame(int fNo, bool bRelax /*= false*/)
