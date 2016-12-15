@@ -15,7 +15,9 @@ int nNoOfFramesProcessed = 0;
 //globals related to matching of previous frame to current
 int nTotalNMB = 0; //NMB = Not Matching Block
 int nTotalNMBPrev = 0;
+int nTotalNMBPrevPrev = 0;
 int nTotalBWithThresh = 0; //Total blocks having some threshold
+int nTotalHumanPnts = 0;
 
 //globals related to adaptive setting of precision of frame rate
 int nStartFrame = 0;

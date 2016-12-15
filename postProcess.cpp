@@ -69,6 +69,7 @@ void findLNOutputFrames(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 	//Find possible LN output Frames
 	nTotalNMB = 0; //NMB = Not Matching Block
 	nTotalNMBPrev = 0;
+	nTotalNMBPrevPrev = 0;
 	nTotalBWithThresh = 0; //Total blocks having some threshold
 	int nCurrLNFrameIndex = 0;
 	int nPrevLNFrameIndex = 0;
@@ -89,7 +90,8 @@ void findLNOutputFrames(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 	//findTotalNMB(nNoOfFramesProcessed - 1);
 
 	if ((nTotalNMB * 10 < nTotalBlocks * 3) &&
-		(nTotalBWithThresh * 10 > nTotalBlocks)) {
+		(nTotalBWithThresh * 10 > nTotalBlocks) &&
+		((bDeleteHuman == false) || (nTotalHumanPnts * 10 < nTotalBlocks * 3))) {
 		nPrevLNFrameIndex = nCurrLNFrameIndex;
 		nCurrLNFrameIndex = nNoOfFramesProcessed - 1;
 		int nCurrFrameNum = (LNArrayOfBlockObj[0][0].arrayOfBlock[nNoOfFramesProcessed - 1]).nFrameNum;

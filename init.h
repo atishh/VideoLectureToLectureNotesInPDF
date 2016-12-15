@@ -44,7 +44,9 @@ extern int nNoOfFramesProcessed;
 //globals related to matching of previous frame to current
 extern int nTotalNMB; //NMB = Not Matching Block
 extern int nTotalNMBPrev;
+extern int nTotalNMBPrevPrev;
 extern int nTotalBWithThresh; //Total blocks having some threshold
+extern int nTotalHumanPnts;
 
 //globals related to adaptive setting of precision of frame rate
 extern int nStartFrame;

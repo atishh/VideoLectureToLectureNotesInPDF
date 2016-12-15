@@ -91,6 +91,11 @@ void drawDiagRectanges(cv::Mat& imgFrame1CopyLN, int nCurrentBlockTemp)
 
 bool isBlockDifferentFromPrevBlock(int nFrame, int r, int c)
 {
+	if (bDeleteHuman) {
+		if ((LNArrayOfBlockObj[r][c].arrayOfBlock[nFrame - 1]).nNoOfHumanPoints > nDeleteHumanTh)
+			return false;
+	}
+
 	int prevNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[nFrame - 1]).nNoOfPoints;
 	int currNoOfPoints = (LNArrayOfBlockObj[r][c].arrayOfBlock[nFrame]).nNoOfPoints;
 	//Ideally the difference should be zero.
@@ -104,11 +109,12 @@ bool isBlockDifferentFromPrevBlock(int nFrame, int r, int c)
 //Find total not matching blocks
 void findTotalNMB(int fNo)
 {
+	nTotalNMBPrevPrev = nTotalNMBPrev;
 	nTotalNMBPrev = nTotalNMB;
 	nTotalNMB = 0;
 	nTotalBWithThresh = 0;
 	int nTotalPoints = 0;
-	int nTotalHumanPnts = 0;
+	nTotalHumanPnts = 0;
 	for (int r = 0; r < nNoOfBlockRow; r++) {
 		for (int c = 0; c < nNoOfBlockCol; c++) {
 			if (isBlockDifferentFromPrevBlock(fNo, r, c)) {
@@ -122,7 +128,7 @@ void findTotalNMB(int fNo)
 			nTotalHumanPnts += ((LNArrayOfBlockObj[r][c].arrayOfBlock[fNo]).nNoOfHumanPoints > nDeleteHumanTh);
 		}
 	}
-	std::cout << "Frame = " << (LNArrayOfBlockObj[0][0].arrayOfBlock[fNo - 1]).nFrameNum
+	std::cout << "Frame = " << (LNArrayOfBlockObj[0][0].arrayOfBlock[fNo]).nFrameNum
 		<< " totalBlocks = " << nTotalBlocks << " totalNotMatchingBlocks = "
 		<< nTotalNMB << " nTotalPoints = " << nTotalPoints 
 		<< " nTotalHumanPnts = " << nTotalHumanPnts << "\n" ;
@@ -130,8 +136,8 @@ void findTotalNMB(int fNo)
 
 bool isThisPossibleOutputFrame(int fNo, bool bRelax /*= false*/)
 {
+	bool bReturn = false;
 	findTotalNMB(fNo);
-
 	int nDiffOfNMBPercent = nTotalNMB - nTotalNMBPrev;
 	nDiffOfNMBPercent = (nDiffOfNMBPercent * 100) / nTotalBlocks;
 	int nTotalNMBPercent = (nTotalNMB * 100) / nTotalBlocks;
@@ -139,11 +145,27 @@ bool isThisPossibleOutputFrame(int fNo, bool bRelax /*= false*/)
 	//If 80% of total block doesn't matches && atmost 20% of previous total block doesn't match
 	if (((nTotalNMBPercent > 70) && (nTotalNMBPrevPercent < 30)) ||
 		((nDiffOfNMBPercent > 50) /*&& (nTotalNMBPrev < 20)*/)) {
-		return true;
+		bReturn = true;
 	}
-	if (bRelax && (nDiffOfNMBPercent > 40))
-		return true;
-	return false;
+	else if (bRelax && (nDiffOfNMBPercent > 40))
+		bReturn = true;
+
+	if (bDeleteHuman) {
+		//less strict conditions than above
+		int nTotalHumanPntsPercent = (nTotalHumanPnts * 100) / nTotalBlocks;
+		if (((nTotalNMBPercent > 70) && (nTotalNMBPrevPercent < 30)) ||
+			((nDiffOfNMBPercent > 25) && (nTotalHumanPntsPercent > 80))) {
+			bReturn = true;
+		}
+		if (!bRelax) {
+			//If a frame is matched then atleast 2 previous frames should be similar.
+			nTotalNMBPrevPercent = (abs(nTotalNMBPrevPrev - nTotalNMBPrev) * 100) / nTotalBlocks;
+			if (nTotalNMBPrevPercent > 20)
+				bReturn = false;
+		}
+	}
+
+	return bReturn;
 }
 
 bool isHigherPrecisionNeeded()
