@@ -108,10 +108,11 @@ static void displayFramesOfBlocks(LNFramesOfBlocks LNFramesOfBlocksObj,
 	int nLNOutputFrameNum = LNFramesOfBlocksObj.nCurrFrameNum;
 	int nPrevFrameNum = LNFramesOfBlocksObj.nPrevFrameNum;
 	cv::Mat imgFrame2;
-	capVideo.set(CV_CAP_PROP_POS_FRAMES, nPrevFrameNum);
-	capVideo.read(imgFrame1);
-	std::string finalImageStr = "PreviousImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
-	//	cv::imshow(finalImage, imgFrame1);
+	std::string finalImageStr;
+	//capVideo.set(CV_CAP_PROP_POS_FRAMES, nPrevFrameNum);
+	//capVideo.read(imgFrame1);
+	//finalImageStr = "PreviousImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
+	//cv::imshow(finalImage, imgFrame1);
 	capVideo.set(CV_CAP_PROP_POS_FRAMES, nLNOutputFrameNum);
 	capVideo.read(imgFrame1);
 	finalImageStr = "IntermediateImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
@@ -127,13 +128,23 @@ static void displayFramesOfBlocks(LNFramesOfBlocks LNFramesOfBlocksObj,
 
 	std::cout << " Final Frame no " << nLNOutputFrameNum << "\n";
 	int** ary = LNFramesOfBlocksObj.nFrameNumOfBlock;
+	std::map<int, cv::Mat>  frameToMat;
+	std::map<int, cv::Mat>::iterator iter;
+
 	for (int r = 0; r < nNoOfBlockRow; r++) {
 		for (int c = 0; c < nNoOfBlockCol; c++) {
 			int nFrameOfBlock = ary[r][c];
 			std::cout << nFrameOfBlock << " ";
 			if (nFrameOfBlock != nLNOutputFrameNum) {
-				capVideo.set(CV_CAP_PROP_POS_FRAMES, nFrameOfBlock);
-				capVideo.read(imgFrame2);
+				iter = frameToMat.find(nFrameOfBlock);
+				if (iter != frameToMat.end()) {
+					imgFrame2 = (iter->second).clone();
+				}
+				else {
+					capVideo.set(CV_CAP_PROP_POS_FRAMES, nFrameOfBlock);
+					capVideo.read(imgFrame2);
+					frameToMat[nFrameOfBlock] = imgFrame2.clone();
+				}
 				int nStartRow = LNArrayOfBlockObj[r][c].nStartRow;
 				int nStartCol = LNArrayOfBlockObj[r][c].nStartCol;
 				int nFinalRow = LNArrayOfBlockObj[r][c].nFinalRow;
