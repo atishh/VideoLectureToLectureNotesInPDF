@@ -34,6 +34,7 @@ LNFramesOfBlocks matchingFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoOf
 	std::cout << " Final Frame no "
 		<< (LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNFrameIndex]).nFrameNum
 		<< "\n";
+	int nMatchingFrameCount = 0;
 	for (int r = 0; r < nNoOfBlockRow; r++) {
 		for (int c = 0; c < nNoOfBlockCol; c++) {
 			int nCorrectFrameNo = (LNArrayOfBlockObj[r][c].arrayOfBlock[nCurrLNFrameIndex]).nFrameNum;
@@ -51,6 +52,7 @@ LNFramesOfBlocks matchingFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoOf
 						((nCurrNoOfPoints <= 20) && (diff < 10))) {
 						nCorrectFrameNo = (LNArrayOfBlockObj[r][c].arrayOfBlock[i]).nFrameNum;
 						bFound = 1;
+						nMatchingFrameCount++;
 						break;
 					}
 				}
@@ -59,6 +61,12 @@ LNFramesOfBlocks matchingFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoOf
 			std::cout << nCorrectFrameNo << "," << bFound << " ";
 		}
 		std::cout << "\n";
+	}
+	//If there are less no. of matching frames of blocks, most probably this is a junk frame.
+	if (((nMatchingFrameCount * 100) / nTotalBlocks) < 50) {
+		LNFramesOfBlocksObj.bIsDeleted = true;
+		std::cout << " Frame no. " << LNFramesOfBlocksObj.nCurrFrameNum <<
+			" has less no. of matching frames, hence deleted \n";
 	}
 	return LNFramesOfBlocksObj;
 }
@@ -229,9 +237,5 @@ void deleteOverlappingFrames(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlock
 			std::cout << "frame = " << arrayOfFramesOfBlocks[i - 1].nCurrFrameNum
 				<< " is deleted \n";
 		}
-		else {
-			arrayOfFramesOfBlocks[i - 1].bIsDeleted = false;
-		}
-		arrayOfFramesOfBlocks[i].bIsDeleted = false;
 	}
 }
