@@ -173,6 +173,7 @@ bool isHigherPrecisionNeeded()
 	int nCurrLNFrameIndex = LNArrayOfBlockObj[0][0].nNoOfBlocks - 1;
 	if ((nIgnoreNextFrames > 100) && (nCurrLNFrameIndex > 1) &&
 		isThisPossibleOutputFrame(nCurrLNFrameIndex, true)) {
+		nPrecisionToggleCount++;
 		return true;
 	}
 	return false;

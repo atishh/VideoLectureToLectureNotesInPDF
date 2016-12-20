@@ -24,7 +24,6 @@ const bool bEnableShiftAndDiff = 1;
 const bool bDeleteHuman = false;
 const int nDeleteHumanTh = 100; // Threshold no. of white pixels
 const cv::Scalar SCALAR_BLACK = cv::Scalar(0.0, 0.0, 0.0);
-const cv::Scalar SCALAR_WHITE = cv::Scalar(255.0, 255.0, 255.0);
 const cv::Scalar SCALAR_YELLOW = cv::Scalar(0.0, 255.0, 255.0);
 const cv::Scalar SCALAR_GREEN = cv::Scalar(0.0, 200.0, 0.0);
 const cv::Scalar SCALAR_RED = cv::Scalar(0.0, 0.0, 255.0);
@@ -41,6 +40,11 @@ extern int nIgnoreNextFrames;
 extern LNArrayOfBlock LNArrayOfBlockObj[nNoOfBlockRow][nNoOfBlockCol];
 extern int nNoOfFramesProcessed;
 
+//globals related to selected frames.
+extern std::vector<LNFramesOfBlocks> arrayOfFramesOfBlocks;
+extern int nFramesDeletedNonMatch;
+extern int nFramesDeletedSubset;
+
 //globals related to matching of previous frame to current
 extern int nTotalNMB; //NMB = Not Matching Block
 extern int nTotalNMBPrev;
@@ -55,8 +59,10 @@ extern int nCurrFrameNum;
 extern int nIgnoreNextFrames;
 extern int nCurrFrameNumCache;
 extern int nIgnoreNextFramesCache;
+extern int nPrecisionToggleCount;
 
 //functions declarations.
 extern void initialize();
+extern void printStatistics();
 
 #endif    // _H_LNINIT_

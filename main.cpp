@@ -91,6 +91,15 @@ int main(void) {
 				imgFrame1Prev = imgFrame1.clone();
 			}
 			capVideo.read(imgFrame1);
+			cv::Size nSize = imgFrame1.size();
+			if (nSize.height <= 0) {
+				std::cout << "Breaking because height is 0 \n";
+				break;
+			}
+			if (nSize.width <= 0) {
+				std::cout << "Breaking because height is 0 \n";
+				break;
+			}
 		}
 		else {
 			std::cout << "end of video\n";
@@ -104,8 +113,6 @@ int main(void) {
 
 	printWhitePixelsForDiag();
 
-	std::vector<LNFramesOfBlocks> arrayOfFramesOfBlocks;
-
 	//Find possible LN output Frames
 	findLNOutputFrames(arrayOfFramesOfBlocks);
 
@@ -114,7 +121,8 @@ int main(void) {
 	writeFramesToPdf(arrayOfFramesOfBlocks);
 
 	//Post process ends here
-	
+
+	printStatistics();
 	printf("Time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
 
 	if (chCheckForEscKey != 27) {               // if the user did not press esc (i.e. we reached the end of the video)

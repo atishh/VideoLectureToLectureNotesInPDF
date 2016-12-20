@@ -67,6 +67,7 @@ LNFramesOfBlocks matchingFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoOf
 		LNFramesOfBlocksObj.bIsDeleted = true;
 		std::cout << " Frame no. " << LNFramesOfBlocksObj.nCurrFrameNum <<
 			" has less no. of matching frames, hence deleted \n";
+		nFramesDeletedNonMatch++;
 	}
 	return LNFramesOfBlocksObj;
 }
@@ -236,6 +237,7 @@ void deleteOverlappingFrames(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlock
 			arrayOfFramesOfBlocks[i - 1].bIsDeleted = true;
 			std::cout << "frame = " << arrayOfFramesOfBlocks[i - 1].nCurrFrameNum
 				<< " is deleted \n";
+			nFramesDeletedSubset++;
 		}
 	}
 }

@@ -12,6 +12,11 @@ int nNoOfPixelsOfBlockCol = 0;
 LNArrayOfBlock LNArrayOfBlockObj[nNoOfBlockRow][nNoOfBlockCol];
 int nNoOfFramesProcessed = 0;
 
+//globals related to selected frames.
+std::vector<LNFramesOfBlocks> arrayOfFramesOfBlocks;
+int nFramesDeletedNonMatch = 0;
+int nFramesDeletedSubset = 0;
+
 //globals related to matching of previous frame to current
 int nTotalNMB = 0; //NMB = Not Matching Block
 int nTotalNMBPrev = 0;
@@ -26,6 +31,7 @@ int nCurrFrameNum = 0;
 int nIgnoreNextFrames = 300;
 int nCurrFrameNumCache = 0;
 int nIgnoreNextFramesCache = 0;
+int nPrecisionToggleCount = 0;
 
 void initialize()
 {
@@ -63,4 +69,19 @@ void initialize()
 		}
 	}
 
+}
+
+void printStatistics()
+{
+	std::cout << "1. Frame width = " << frameWidth << "\n";
+	std::cout << "2. Frame height = " << frameHeight << "\n";
+	std::cout << "3. Total frames = " << totalFrames << " fps = " << fps << "\n";
+	std::cout << "4. nNoOfPixelsOfBlockRow = " << nNoOfPixelsOfBlockRow << "\n";
+	std::cout << "5. nNoOfPixelsOfBlockCol = " << nNoOfPixelsOfBlockCol << "\n";
+	std::cout << "6. Total frames processed " << (LNArrayOfBlockObj[0][0].arrayOfBlock).size() 
+		<< "\n";
+	std::cout << "7. No. of times precision toggles " << nPrecisionToggleCount << "\n";
+	std::cout << "8. Total frames selected " << arrayOfFramesOfBlocks.size() << "\n";
+	std::cout << "9. Frames deleted due to non match " << nFramesDeletedNonMatch << "\n";
+	std::cout << "10. Frames deleted due to subset " << nFramesDeletedSubset << "\n";
 }
