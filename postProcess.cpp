@@ -189,7 +189,12 @@ void writeFramesToPdf(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 		std::string finalImageStr = "FinalImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
 		std::string finalImageStr1 = "../tmp/" + finalImageStr + ".jpg";
 		cv::imshow(finalImageStr1, imgFrame1);
-		cv::imwrite(finalImageStr1, imgFrame1);
+		std::vector<int> params;
+		if (nImageCompressionPercent > 0) {
+			params.push_back(CV_IMWRITE_JPEG_QUALITY);
+			params.push_back(nImageCompressionPercent);   // that's percent, so 100 == no compression, 1 == full 
+		}
+		cv::imwrite(finalImageStr1, imgFrame1, params);
 
 		Magick::readImages(&imageList, finalImageStr1);
 	}

@@ -23,6 +23,10 @@ const int nTotalBlocks = nNoOfBlockRow*nNoOfBlockCol;
 const bool bEnableShiftAndDiff = 1;
 const bool bDeleteHuman = false;
 const int nDeleteHumanTh = 100; // Threshold no. of white pixels
+
+//const global for image compression
+const int nImageCompressionPercent = 80;
+
 const cv::Scalar SCALAR_BLACK = cv::Scalar(0.0, 0.0, 0.0);
 const cv::Scalar SCALAR_YELLOW = cv::Scalar(0.0, 255.0, 255.0);
 const cv::Scalar SCALAR_GREEN = cv::Scalar(0.0, 200.0, 0.0);
