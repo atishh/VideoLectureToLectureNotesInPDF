@@ -192,12 +192,12 @@ void deleteLastBlock()
 void setHigherPrecisionFrameRate()
 {
 	std::cout << " Ignore next frames changed from " << nIgnoreNextFrames
-		<< " to 100 " << "\n";
+		<< " to " << nIgnoreNextFramesMin << " \n";
 	nCurrFrameNumCache = nCurrFrameNum;
 	nStartFrame = nCurrFrameNum - 2 * nIgnoreNextFrames;
 	frameCount = 1;
 	nIgnoreNextFramesCache = nIgnoreNextFrames;
-	nIgnoreNextFrames = 100;
+	nIgnoreNextFrames = nIgnoreNextFramesMin;
 
 	deleteLastBlock();
 	deleteLastBlock();
@@ -214,8 +214,8 @@ bool isLowerPrecisionNeeded()
 
 void setLowerPrecisionFrameRate()
 {
-	std::cout << " Reverting Ignore next frames changed from 100 to"
-		<< nIgnoreNextFramesCache << "\n";
+	std::cout << " Reverting Ignore next frames changed from " << nIgnoreNextFrames 
+		<< " to " << nIgnoreNextFramesCache << "\n";
 	nIgnoreNextFrames = nIgnoreNextFramesCache;
 	nStartFrame = nCurrFrameNum;
 	frameCount = 1;

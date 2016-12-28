@@ -29,6 +29,7 @@ int nStartFrame = 0;
 int frameCount = 0;
 int nCurrFrameNum = 0;
 int nIgnoreNextFrames = 300;
+int nIgnoreNextFramesMin = 20;
 int nCurrFrameNumCache = 0;
 int nIgnoreNextFramesCache = 0;
 int nPrecisionToggleCount = 0;

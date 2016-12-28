@@ -61,6 +61,7 @@ extern int nStartFrame;
 extern int frameCount;
 extern int nCurrFrameNum;
 extern int nIgnoreNextFrames;
+extern int nIgnoreNextFramesMin;
 extern int nCurrFrameNumCache;
 extern int nIgnoreNextFramesCache;
 extern int nPrecisionToggleCount;
