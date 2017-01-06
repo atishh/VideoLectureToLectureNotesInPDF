@@ -21,7 +21,7 @@ const int nNoOfBlockCol = 10;
 const int nTotalBlocks = nNoOfBlockRow*nNoOfBlockCol;
 
 const bool bEnableShiftAndDiff = 1;
-const bool bDeleteHuman = false;
+const bool bDeleteHuman = true;
 const int nDeleteHumanTh = 100; // Threshold no. of white pixels
 
 //const global for image compression
