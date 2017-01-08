@@ -185,7 +185,7 @@ void writeFramesToPdf(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 		cv::Mat imgFrame1;
 		displayFramesOfBlocks(LNFramesOfBlocksObj,
 			arrayOfFramesOfBlocks, imgFrame1);
-		drawDiagRectanges(imgFrame1, LNFramesOfBlocksObj.nCurrBlockNum);
+		//drawDiagRectanges(imgFrame1, LNFramesOfBlocksObj.nCurrBlockNum);
 		std::string finalImageStr = "FinalImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
 		std::string finalImageStr1 = "../tmp/" + finalImageStr + ".jpg";
 		cv::imshow(finalImageStr1, imgFrame1);

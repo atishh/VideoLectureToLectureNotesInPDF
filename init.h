@@ -25,7 +25,8 @@ const bool bDeleteHuman = true;
 const int nDeleteHumanTh = 100; // Threshold no. of white pixels
 
 //const global for image compression
-const int nImageCompressionPercent = 80;
+const int nImageCompressionPercent = 95; //Making percent very high. Actual compression
+										 //will happen in LectureNoteWaterMark
 
 const cv::Scalar SCALAR_BLACK = cv::Scalar(0.0, 0.0, 0.0);
 const cv::Scalar SCALAR_YELLOW = cv::Scalar(0.0, 255.0, 255.0);
