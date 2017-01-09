@@ -2,6 +2,7 @@
 
 #include "init.h"
 
+std::string sVideoPath;
 cv::VideoCapture capVideo;
 int frameWidth = 0;
 int frameHeight = 0;

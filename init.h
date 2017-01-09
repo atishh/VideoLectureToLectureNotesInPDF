@@ -34,6 +34,7 @@ const cv::Scalar SCALAR_GREEN = cv::Scalar(0.0, 200.0, 0.0);
 const cv::Scalar SCALAR_RED = cv::Scalar(0.0, 0.0, 255.0);
 
 //other globals
+extern std::string sVideoPath;
 extern cv::VideoCapture capVideo;
 extern int frameWidth;
 extern int frameHeight;

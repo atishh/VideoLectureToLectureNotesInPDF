@@ -17,14 +17,16 @@ int main(void) {
 	cv::Mat imgThresh;
 	cv::Mat imgThreshPrev;
 
-	capVideo.open("../mod03lec10.mp4");
-	//capVideo.open("../Lecture14.mp4");
-	//capVideo.open("../MIT3_054S15_L15_300k.mp4");
-	//capVideo.open("../MIT6_006F11_lec02_300k.mp4");
-	//capVideo.open("../IndianGeography.mp4");
-	//capVideo.open("../The Lagrangian.mp4");
-	//capVideo.open("../IC_ENGINE.mp4");
-	//capVideo.open("../WordPress Archive Tutorial (archive.php)-3fgEgzPx7QM.mkv");
+	sVideoPath = "../mod03lec10";
+	//sVideoPath = "../Lecture14";
+	//sVideoPath = "../MIT3_054S15_L15_300k";
+	//sVideoPath = "../MIT6_006F11_lec02_300k";
+	//sVideoPath = "../IndianGeography";
+	//sVideoPath = "../The Lagrangian";
+	//sVideoPath = ".. / IC_ENGINE";
+
+	std::string sVideoName = sVideoPath + ".mp4";
+	capVideo.open(sVideoName);
 
 	//nStartFrame = 500;
 	nStartFrame = 50500;

@@ -9,6 +9,15 @@
 #include "init.h"
 #include "engine.h"
 
+#if defined _MSC_VER
+#include <direct.h>
+#elif defined __GNUC__
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
+
+#include <fstream>
+
 //functions declarations.
 extern void printWhitePixelsForDiag();
 extern bool isBlockDifferentFromPrevBlock(int nFrame, int r, int c);

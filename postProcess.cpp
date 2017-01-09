@@ -172,8 +172,20 @@ static void displayFramesOfBlocks(LNFramesOfBlocks LNFramesOfBlocksObj,
 
 }
 
+void createMyDir(std::string dir) {
+#if defined _MSC_VER
+	_mkdir(dir.data());
+#elif defined __GNUC__
+	mkdir(dir.data(), 0777);
+#endif
+}
+
 void writeFramesToPdf(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 {
+	//Create directory;
+	std::string sDirName = sVideoPath;
+	createMyDir(sDirName);
+	std::ofstream ofile(sDirName + "_frame.list");
 	std::list<Magick::Image> imageList;
 	for (int i = 0; i < arrayOfFramesOfBlocks.size(); i++) {
 		LNFramesOfBlocks LNFramesOfBlocksObj;
@@ -187,7 +199,7 @@ void writeFramesToPdf(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 			arrayOfFramesOfBlocks, imgFrame1);
 		//drawDiagRectanges(imgFrame1, LNFramesOfBlocksObj.nCurrBlockNum);
 		std::string finalImageStr = "FinalImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
-		std::string finalImageStr1 = "../tmp/" + finalImageStr + ".jpg";
+		std::string finalImageStr1 = sDirName + "/" + finalImageStr + ".jpg";
 		cv::imshow(finalImageStr1, imgFrame1);
 		std::vector<int> params;
 		if (nImageCompressionPercent > 0) {
@@ -197,11 +209,13 @@ void writeFramesToPdf(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 		cv::imwrite(finalImageStr1, imgFrame1, params);
 
 		Magick::readImages(&imageList, finalImageStr1);
+		ofile << finalImageStr1 << std::endl;
 	}
 	std::cout << "\n";
 	//Write the final pdf
 	std::string finalImageStr3 = "../tmpP/finalImage.pdf";
 	Magick::writeImages(imageList.begin(), imageList.end(), finalImageStr3);
+	ofile.close();
 }
 
 bool IsSubsetOf(int nFrameIndex1, int nFrameIndex2)
