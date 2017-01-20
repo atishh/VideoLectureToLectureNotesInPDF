@@ -29,8 +29,8 @@ int main(int argc, char* argv[]) {
 	std::string sVideoName = sVideoPath + ".mp4";
 	capVideo.open(sVideoName);
 
-	//nStartFrame = 500;
-	nStartFrame = 50500;
+	nStartFrame = 100;
+	//nStartFrame = 50500;
 
 	capVideo.set(CV_CAP_PROP_POS_FRAMES, nStartFrame);
 	frameCount = 2;
@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
 	printf("Time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
 
 	if (chCheckForEscKey != 27) {               // if the user did not press esc (i.e. we reached the end of the video)
-		cv::waitKey(0);                         // hold the windows open to allow the "end of video" message to show
+		if(bShowImage) cv::waitKey(0);                         // hold the windows open to allow the "end of video" message to show
 	}
 	
 	// note that if the user did press esc, we don't need to hold the windows open, we can simply let the program end which will close the windows
