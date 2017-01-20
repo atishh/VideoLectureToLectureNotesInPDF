@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
 
 	while (capVideo.isOpened() && chCheckForEscKey != 27) {
 
-		cv::imshow("OrigImage", imgFrame1);
+		if(bShowImage) cv::imshow("OrigImage", imgFrame1);
 
 		findHuman(imgFrame1, imgFrame1Prev, imgThresh, imgThreshPrev);
 
@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
 
 		//Draw rectangles for diagnostics.
 		drawDiagRectanges(imgFrame1CopyLN, LNArrayOfBlockObj[0][0].nNoOfBlocks - 1);
-		cv::imshow("ImageWithLines", imgFrame1CopyLN);
+		if(bShowImage) cv::imshow("ImageWithLines", imgFrame1CopyLN);
 
 		//cv::waitKey(0);                 // uncomment this line to go frame by frame for debugging
 

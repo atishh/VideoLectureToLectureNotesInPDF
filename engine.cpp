@@ -18,7 +18,7 @@ void shiftAndDiff(cv::Mat& imgFrame1CopyLN)
 	else {
 		cv::Mat imgFrame1CopyLNOrig = imgFrame1CopyLN.clone();
 		cv::GaussianBlur(imgFrame1CopyLNOrig, imgFrame1CopyLNOrig, cv::Size(5, 5), 0);
-		cv::imshow("GausiaanBlur", imgFrame1CopyLNOrig);
+		if(bShowImage) cv::imshow("GausiaanBlur", imgFrame1CopyLNOrig);
 		cv::absdiff(imgFrame1CopyLN, imgFrame1CopyLNOrig, imgFrame1CopyLN);
 	}
 }
@@ -26,13 +26,13 @@ void shiftAndDiff(cv::Mat& imgFrame1CopyLN)
 void convertToBW(cv::Mat& imgFrame1CopyLN)
 {
 	cv::cvtColor(imgFrame1CopyLN, imgFrame1CopyLN, CV_BGR2GRAY);
-	cv::imshow("GrayImage", imgFrame1CopyLN);
+	if(bShowImage) cv::imshow("GrayImage", imgFrame1CopyLN);
 
 	shiftAndDiff(imgFrame1CopyLN);
-	cv::imshow("DiffImage", imgFrame1CopyLN);
+	if(bShowImage) cv::imshow("DiffImage", imgFrame1CopyLN);
 
 	cv::threshold(imgFrame1CopyLN, imgFrame1CopyLN, 20, 255.0, CV_THRESH_BINARY);
-	cv::imshow("ThresholdImage", imgFrame1CopyLN);
+	if(bShowImage) cv::imshow("ThresholdImage", imgFrame1CopyLN);
 }
 
 void createBlocksOfFrame(cv::Mat& imgFrame1CopyLN, int nCurrFrameNum, cv::Mat& imgThresh)
@@ -238,11 +238,11 @@ void findHuman(cv::Mat& imgFrame1, cv::Mat& imgFrame1Prev,
 
 	cv::absdiff(imgFrame1PrevCopyLN, imgFrame2CopyLN, imgDifference);
 	cv::threshold(imgDifference, imgThresh, 30, 255.0, CV_THRESH_BINARY);
-//	cv::imshow("imgThreshForHuman", imgThresh);
+//	if(bShowImage) cv::imshow("imgThreshForHuman", imgThresh);
 
 	cv::bitwise_and(imgThresh, imgThreshPrev, imgThreshPrev);
 	cv::bitwise_xor(imgThresh, imgThreshPrev, imgThresh);
-//	cv::imshow("imgThreshBitwiseForHuman", imgThresh);
+//	if(bShowImage) cv::imshow("imgThreshBitwiseForHuman", imgThresh);
 
 	cv::Mat structuringElement5x5 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
 	for (unsigned int i = 0; i < 2; i++) {
@@ -250,7 +250,7 @@ void findHuman(cv::Mat& imgFrame1, cv::Mat& imgFrame1Prev,
 		cv::dilate(imgThresh, imgThresh, structuringElement5x5);
 		cv::erode(imgThresh, imgThresh, structuringElement5x5);
 	}
-	cv::imshow("imgDilateForHuman", imgThresh);
+	if(bShowImage) cv::imshow("imgDilateForHuman", imgThresh);
 }
 
 void deleteHuman(cv::Mat& imgFrame1CopyLN, cv::Mat& imgThresh)
@@ -261,5 +261,5 @@ void deleteHuman(cv::Mat& imgFrame1CopyLN, cv::Mat& imgThresh)
 	cv::Mat imgThreshCopy = imgThresh.clone();
 	cv::bitwise_not(imgThreshCopy, imgThreshCopy);
 	cv::bitwise_and(imgFrame1CopyLN, imgThreshCopy, imgFrame1CopyLN);
-	cv::imshow("ImageAfterSub", imgFrame1CopyLN);
+	if(bShowImage) cv::imshow("ImageAfterSub", imgFrame1CopyLN);
 }

@@ -29,6 +29,7 @@ const int nTotalBlocks = nNoOfBlockRow*nNoOfBlockCol;
 const bool bEnableShiftAndDiff = 1;
 const bool bDeleteHuman = true;
 const int nDeleteHumanTh = 100; // Threshold no. of white pixels
+const bool bShowImage = false;
 
 //const global for image compression
 const int nImageCompressionPercent = 95; //Making percent very high. Actual compression

@@ -200,7 +200,7 @@ void writeFramesToPdf(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 		//drawDiagRectanges(imgFrame1, LNFramesOfBlocksObj.nCurrBlockNum);
 		std::string finalImageStr = "FinalImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
 		std::string finalImageStr1 = sDirName + "/" + finalImageStr + ".jpg";
-		cv::imshow(finalImageStr1, imgFrame1);
+		if(bShowImage) cv::imshow(finalImageStr1, imgFrame1);
 		std::vector<int> params;
 		if (nImageCompressionPercent > 0) {
 			params.push_back(CV_IMWRITE_JPEG_QUALITY);
