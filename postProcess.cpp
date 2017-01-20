@@ -213,7 +213,7 @@ void writeFramesToPdf(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 	}
 	std::cout << "\n";
 	//Write the final pdf
-	std::string finalImageStr3 = "../tmpP/finalImage.pdf";
+	std::string finalImageStr3 = sVideoPath + ".pdf";
 	Magick::writeImages(imageList.begin(), imageList.end(), finalImageStr3);
 	ofile.close();
 }

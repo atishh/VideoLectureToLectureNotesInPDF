@@ -8,7 +8,7 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-int main(void) {
+int main(int argc, char* argv[]) {
 
 	clock_t tStart = clock();
 
@@ -17,7 +17,8 @@ int main(void) {
 	cv::Mat imgThresh;
 	cv::Mat imgThreshPrev;
 
-	sVideoPath = "../mod03lec10";
+	sVideoPath = argv[1];
+	//sVideoPath = "../mod03lec10";
 	//sVideoPath = "../Lecture14";
 	//sVideoPath = "../MIT3_054S15_L15_300k";
 	//sVideoPath = "../MIT6_006F11_lec02_300k";
