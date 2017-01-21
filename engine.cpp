@@ -41,6 +41,7 @@ void createBlocksOfFrame(cv::Mat& imgFrame1CopyLN, int nCurrFrameNum, cv::Mat& i
 		for (int c = 0; c < nNoOfBlockCol; c++) {
 			LNBlock LNBlockObj;
 			LNBlockObj.nFrameNum = nCurrFrameNum;
+			LNBlockObj.nTime = nCurrTime;
 			LNBlockObj.nNoOfPoints = 0;
 			for (int i = r*nNoOfPixelsOfBlockRow; i < (r + 1)*nNoOfPixelsOfBlockRow; i++) {
 				for (int j = c*nNoOfPixelsOfBlockCol; j < (c + 1)*nNoOfPixelsOfBlockCol; j++) {
@@ -128,10 +129,11 @@ void findTotalNMB(int fNo)
 			nTotalHumanPnts += ((LNArrayOfBlockObj[r][c].arrayOfBlock[fNo]).nNoOfHumanPoints > nDeleteHumanTh);
 		}
 	}
-	std::cout << "Frame = " << (LNArrayOfBlockObj[0][0].arrayOfBlock[fNo]).nFrameNum
-		<< " totalBlocks = " << nTotalBlocks << " totalNotMatchingBlocks = "
-		<< nTotalNMB << " nTotalPoints = " << nTotalPoints 
-		<< " nTotalHumanPnts = " << nTotalHumanPnts << "\n" ;
+	std::cout << "Ti = " << (LNArrayOfBlockObj[0][0].arrayOfBlock[fNo]).nTime
+		<< " Fr = " << (LNArrayOfBlockObj[0][0].arrayOfBlock[fNo]).nFrameNum
+		<< " ttlBlks = " << nTotalBlocks << " ttlNotMatchBlks = "
+		<< nTotalNMB << " nTlPnts = " << nTotalPoints 
+		<< " nTtlHumanPnts = " << nTotalHumanPnts << "\n" ;
 }
 
 bool isThisPossibleOutputFrame(int fNo, bool bRelax /*= false*/)
@@ -153,10 +155,14 @@ bool isThisPossibleOutputFrame(int fNo, bool bRelax /*= false*/)
 	if (bDeleteHuman) {
 		//less strict conditions than above
 		int nTotalHumanPntsPercent = (nTotalHumanPnts * 100) / nTotalBlocks;
-		if (((nTotalNMBPercent > 70) && (nTotalNMBPrevPercent < 30)) ||
-			((nDiffOfNMBPercent > 25) && (nTotalHumanPntsPercent > 80))) {
+		if ((nTotalNMBPercent > 70) && (nTotalNMBPrevPercent < 30))
 			bReturn = true;
-		}
+		if ((nDiffOfNMBPercent > 25) && (nTotalHumanPntsPercent > 80)) 
+			bReturn = true;
+		//Very Aggressive. Ideal for slide show. May remove this
+		if (((nDiffOfNMBPercent + nTotalHumanPntsPercent)> 45)) 
+			bReturn = true;
+
 		if (!bRelax) {
 			//If a frame is matched then atleast 2 previous frames should be similar.
 			nTotalNMBPrevPercent = (abs(nTotalNMBPrevPrev - nTotalNMBPrev) * 100) / nTotalBlocks;
@@ -171,7 +177,7 @@ bool isThisPossibleOutputFrame(int fNo, bool bRelax /*= false*/)
 bool isHigherPrecisionNeeded()
 {
 	int nCurrLNFrameIndex = LNArrayOfBlockObj[0][0].nNoOfBlocks - 1;
-	if ((nIgnoreNextFrames > 100) && (nCurrLNFrameIndex > 1) &&
+	if ((nIgnoreNextFrames > nIgnoreNextFramesMin) && (nCurrLNFrameIndex > 1) &&
 		isThisPossibleOutputFrame(nCurrLNFrameIndex, true)) {
 		nPrecisionToggleCount++;
 		return true;

@@ -13,6 +13,7 @@ public:
 	// member variables
 	std::vector<cv::Point> whitePixels;
 	int nFrameNum;
+	int nTime;
 	int nNoOfPoints;
 	int nNoOfHumanPoints;
 

@@ -81,14 +81,12 @@ int main(int argc, char* argv[]) {
 
 		capVideo.set(CV_CAP_PROP_POS_FRAMES, nStartFrame + nIgnoreNextFrames * frameCount);
 		nCurrFrameNum = nStartFrame + nIgnoreNextFrames * frameCount;
-		std::cout << "frame count = " << frameCount << " frame no = "
-			<< nCurrFrameNum << "\n";
 
 		if (nCurrFrameNum >= totalFrames) {
 			break;
 		}
-		if (frameCount > 500)
-			break;
+		//if (frameCount > 500)
+		//	break;
 		if ((capVideo.get(CV_CAP_PROP_POS_FRAMES)) < capVideo.get(CV_CAP_PROP_FRAME_COUNT)) {
 			if (bDeleteHuman) {
 				imgThreshPrev = imgThresh.clone();
@@ -104,6 +102,9 @@ int main(int argc, char* argv[]) {
 				std::cout << "Breaking because height is 0 \n";
 				break;
 			}
+			nCurrTime = (int)capVideo.get(CV_CAP_PROP_POS_MSEC)/1000;
+			std::cout << "time = " << nCurrTime << " frame count = " << frameCount
+				<< " frame no = " << nCurrFrameNum << "\n";
 		}
 		else {
 			std::cout << "end of video\n";
