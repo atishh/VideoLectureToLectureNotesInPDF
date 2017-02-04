@@ -115,6 +115,7 @@ void findTotalNMB(int fNo)
 	nTotalNMB = 0;
 	nTotalBWithThresh = 0;
 	int nTotalPoints = 0;
+	nTotalHumanPntsPrev = nTotalHumanPnts;
 	nTotalHumanPnts = 0;
 	for (int r = 0; r < nNoOfBlockRow; r++) {
 		for (int c = 0; c < nNoOfBlockCol; c++) {
@@ -154,14 +155,23 @@ bool isThisPossibleOutputFrame(int fNo, bool bRelax /*= false*/)
 
 	if (bDeleteHuman) {
 		//less strict conditions than above
+		int nDiffOfHumanPercent = nTotalHumanPnts - nTotalHumanPntsPrev;
+		nDiffOfHumanPercent = (nDiffOfHumanPercent * 100) / nTotalBlocks;
+		
 		int nTotalHumanPntsPercent = (nTotalHumanPnts * 100) / nTotalBlocks;
 		if ((nTotalNMBPercent > 70) && (nTotalNMBPrevPercent < 30))
 			bReturn = true;
 		if ((nDiffOfNMBPercent > 25) && (nTotalHumanPntsPercent > 80)) 
 			bReturn = true;
 		//Very Aggressive. Ideal for slide show. May remove this
-		if (((nDiffOfNMBPercent + nTotalHumanPntsPercent)> 45)) 
+		//if (((nDiffOfNMBPercent + nTotalHumanPntsPercent)> 45)) 
+		//	bReturn = true;
+		if (((nDiffOfNMBPercent + nTotalHumanPntsPercent)> 75)) 
 			bReturn = true;
+		if((nTotalNMBPrev < 10) && (nTotalHumanPntsPrev < 10)) {
+			if((nDiffOfNMBPercent + nDiffOfHumanPercent) > 20)
+				bReturn = true;
+		}
 
 		if (!bRelax) {
 			//If a frame is matched then atleast 2 previous frames should be similar.
@@ -174,13 +184,18 @@ bool isThisPossibleOutputFrame(int fNo, bool bRelax /*= false*/)
 	return bReturn;
 }
 
+int nInsideLowerPrecisionCount = 0;
 bool isHigherPrecisionNeeded()
 {
 	int nCurrLNFrameIndex = LNArrayOfBlockObj[0][0].nNoOfBlocks - 1;
-	if ((nIgnoreNextFrames > nIgnoreNextFramesMin) && (nCurrLNFrameIndex > 1) &&
-		isThisPossibleOutputFrame(nCurrLNFrameIndex, true)) {
-		nPrecisionToggleCount++;
-		return true;
+	if ((nIgnoreNextFrames > nIgnoreNextFramesMin) && (nCurrLNFrameIndex > 1)) {
+		if(isThisPossibleOutputFrame(nCurrLNFrameIndex, true)) {
+			nPrecisionToggleCount++;
+			return true;
+		}
+		nInsideLowerPrecisionCount++;
+	} else {
+		nInsideLowerPrecisionCount  = 0;
 	}
 	return false;
 }
@@ -200,13 +215,21 @@ void setHigherPrecisionFrameRate()
 	std::cout << " Ignore next frames changed from " << nIgnoreNextFrames
 		<< " to " << nIgnoreNextFramesMin << " \n";
 	nCurrFrameNumCache = nCurrFrameNum;
-	nStartFrame = nCurrFrameNum - 2 * nIgnoreNextFrames;
+	if(nInsideLowerPrecisionCount == 1) {
+		//Start from previous 1 iteration
+		nStartFrame = nCurrFrameNum - nIgnoreNextFrames;
+		deleteLastBlock();
+	}
+	else {
+		//Start from previous 2 iteration
+		nStartFrame = nCurrFrameNum - 2 * nIgnoreNextFrames;
+		deleteLastBlock();
+		deleteLastBlock();
+	}
 	frameCount = 1;
 	nIgnoreNextFramesCache = nIgnoreNextFrames;
 	nIgnoreNextFrames = nIgnoreNextFramesMin;
 
-	deleteLastBlock();
-	deleteLastBlock();
 }
 
 bool isLowerPrecisionNeeded()

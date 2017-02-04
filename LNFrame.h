@@ -12,6 +12,7 @@ public:
 	int nCurrFrameNum;
 	int nPrevFrameNum;
 	int nCurrBlockNum;
+	int nCurrTime;
 	bool bIsDeleted;
 
 	LNFramesOfBlocks()
@@ -20,6 +21,7 @@ public:
 		nCurrFrameNum = -1;
 		nPrevFrameNum = -1;
 		nCurrBlockNum = -1;
+		nCurrTime = -1;
 		bIsDeleted = false;
 	}
 };

@@ -31,6 +31,8 @@ LNFramesOfBlocks matchingFramesOfBlocks(LNArrayOfBlock LNArrayOfBlockObj[][nNoOf
 	LNFramesOfBlocksObj.nCurrBlockNum = nCurrLNFrameIndex;
 	LNFramesOfBlocksObj.nCurrFrameNum =
 		(LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNFrameIndex]).nFrameNum;
+	LNFramesOfBlocksObj.nCurrTime =
+		(LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNFrameIndex]).nTime;
 	std::cout << " Final Frame no "
 		<< (LNArrayOfBlockObj[0][0].arrayOfBlock[nCurrLNFrameIndex]).nFrameNum
 		<< "\n";
@@ -194,13 +196,15 @@ void writeFramesToPdf(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 			continue;
 		}
 		int nLNOutputFrameNum = LNFramesOfBlocksObj.nCurrFrameNum;
+		int nLNOutputTime = LNFramesOfBlocksObj.nCurrTime;
 		cv::Mat imgFrame1;
 		displayFramesOfBlocks(LNFramesOfBlocksObj,
 			arrayOfFramesOfBlocks, imgFrame1);
 		//drawDiagRectanges(imgFrame1, LNFramesOfBlocksObj.nCurrBlockNum);
-		std::string finalImageStr = "FinalImage" + std::to_string(nLNOutputFrameNum) + std::to_string(0);
+		std::string finalImageStr = "FinalImage" + std::to_string(nLNOutputFrameNum);
+		finalImageStr += "_" + std::to_string(nLNOutputTime);
 		std::string finalImageStr1 = sDirName + "/" + finalImageStr + ".jpg";
-		if(bShowImage) cv::imshow(finalImageStr1, imgFrame1);
+		//if(bShowImage) cv::imshow(finalImageStr1, imgFrame1);
 		std::vector<int> params;
 		if (nImageCompressionPercent > 0) {
 			params.push_back(CV_IMWRITE_JPEG_QUALITY);
@@ -214,7 +218,7 @@ void writeFramesToPdf(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 	std::cout << "\n";
 	//Write the final pdf
 	std::string finalImageStr3 = sVideoPath + ".pdf";
-	Magick::writeImages(imageList.begin(), imageList.end(), finalImageStr3);
+	//Magick::writeImages(imageList.begin(), imageList.end(), finalImageStr3);
 	ofile.close();
 }
 

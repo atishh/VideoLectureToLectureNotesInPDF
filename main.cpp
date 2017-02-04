@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
 	//nStartFrame = 50500;
 
 	capVideo.set(CV_CAP_PROP_POS_FRAMES, nStartFrame);
-	frameCount = 2;
+	frameCount = 1;
 	nCurrFrameNum = nStartFrame;
 
 	initialize();

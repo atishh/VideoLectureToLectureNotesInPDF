@@ -24,6 +24,7 @@ int nTotalNMBPrev = 0;
 int nTotalNMBPrevPrev = 0;
 int nTotalBWithThresh = 0; //Total blocks having some threshold
 int nTotalHumanPnts = 0;
+int nTotalHumanPntsPrev = 0;
 
 //globals related to adaptive setting of precision of frame rate
 int nStartFrame = 0;

@@ -64,6 +64,7 @@ extern int nTotalNMBPrev;
 extern int nTotalNMBPrevPrev;
 extern int nTotalBWithThresh; //Total blocks having some threshold
 extern int nTotalHumanPnts;
+extern int nTotalHumanPntsPrev;
 
 //globals related to adaptive setting of precision of frame rate
 extern int nStartFrame;
