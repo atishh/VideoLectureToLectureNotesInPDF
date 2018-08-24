@@ -201,8 +201,9 @@ void writeFramesToPdf(std::vector<LNFramesOfBlocks>& arrayOfFramesOfBlocks)
 		displayFramesOfBlocks(LNFramesOfBlocksObj,
 			arrayOfFramesOfBlocks, imgFrame1);
 		//drawDiagRectanges(imgFrame1, LNFramesOfBlocksObj.nCurrBlockNum);
-		std::string finalImageStr = "FinalImage" + std::to_string(nLNOutputFrameNum);
+		std::string finalImageStr = "FI" + std::to_string(nLNOutputFrameNum);
 		finalImageStr += "_" + std::to_string(nLNOutputTime);
+		finalImageStr += "_" + std::to_string(i) + "_";
 		std::string finalImageStr1 = sDirName + "/" + finalImageStr + ".jpg";
 		//if(bShowImage) cv::imshow(finalImageStr1, imgFrame1);
 		std::vector<int> params;

@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
 	cv::Mat imgThresh;
 	cv::Mat imgThreshPrev;
 
-	sVideoPath = argv[1];
+	sVideoPath = argv[6];
 	//sVideoPath = "../mod03lec10";
 	//sVideoPath = "../Lecture14";
 	//sVideoPath = "../MIT3_054S15_L15_300k";
