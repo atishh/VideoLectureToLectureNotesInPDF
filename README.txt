@@ -1,7 +1,9 @@
-//How to use commands.
-.exe -citk -f "best[height<=?1080]" URL
+What is VideoLectureToLectureNotesInPDF?
+It is a tool which takes video lecture file (.mp4, .avi etc.) as input and produces notes in pdf as output. Now a days there are lots of video courses available online, in which the instructor write on a black-board/notebook . This software uses advanced video/image processing to produce the relevant lecture notes. 
 
-ghostscript is required for reading pdf file
+Building/Installing
+Windows:  msbuild LectureNotes.sln /p:Configuration=Release
+Linux: cmake
 
-To BUID:
-msbuild LectureNotes.sln /p:Configuration=Release
+Compile Prerequisites
+GNU Toolchain, cmake, opencv, Magick++, ghostscript
